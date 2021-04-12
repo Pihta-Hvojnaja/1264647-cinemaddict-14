@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { getDescription } from './util/util-film-card.js';
+import { getDescription } from './util/util-film-card.js'; // Обрезает длинну описания
 import { getRuntime } from './util/util.js';
 
 const FIRST_GENRE = 0;

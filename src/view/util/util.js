@@ -16,6 +16,4 @@ const getRuntime = (runtime) => {
 };
 
 
-export {
-  getRuntime
-};
+export { getRuntime };

@@ -1,16 +1,20 @@
 import dayjs from 'dayjs';
 import { generateDataComments } from '../mock/data-comments.js';
 
+
+/*  Генерируем данные для комментариев
+   ========================================================================== */
+
 const dataComments = generateDataComments();
 
 
 /*  Функция синхронизирует данные о фильмах с данными комментариев
    ========================================================================== */
 
-const getFilmComments = (idComments, dataComments) => {
+const getFilmComments = (idsComments, dataComments) => {
   const currentComments = [];
 
-  idComments.forEach((idComment) => {
+  idsComments.forEach((idComment) => {
     currentComments.push(dataComments.find((dataComment) => dataComment.id === idComment));
   });
 
@@ -18,13 +22,14 @@ const getFilmComments = (idComments, dataComments) => {
 };
 
 
-/*  Функция создает комментарии
+/*  Функция возвращает комментарии
    ========================================================================== */
 
 const createComments = (filmComments) => {
 
   return filmComments.reduce((accumulator, filmComment) => {
     const { comment, emotion, author, date } = filmComment;
+
     accumulator += ` <li class="film-details__comment">
                         <span class="film-details__comment-emoji">
                           <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-smile">
@@ -44,12 +49,12 @@ const createComments = (filmComments) => {
 };
 
 
-/*  Функция создает список комментариев
+/*  Функция возвращает список комментариев
    ========================================================================== */
 
-export const createListComments = (idComments) => {
+export const createListComments = (idsComments) => {
 
-  const filmComments = getFilmComments(idComments, dataComments);
+  const filmComments = getFilmComments(idsComments, dataComments);
 
   return `<ul class="film-details__comments-list">
             ${createComments(filmComments)}

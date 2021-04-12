@@ -3,7 +3,7 @@
    ========================================================================== */
 
 /**
- *  Ф-ция генерации целого числа
+ *  Генерация целого числа
  */
 
 const getRandomInteger = (min, max) => {
@@ -14,7 +14,7 @@ const getRandomInteger = (min, max) => {
 };
 
 /**
- *  Ф-ция генерации числа с плавающей точкой
+ *  Генерация числа с плавающей точкой
  */
 
 const getRandomInclusive = (min, max, numberDigit) => parseFloat((Math.random() * (max - min) + min).toFixed(numberDigit));
@@ -40,22 +40,22 @@ const shuffle = (items) => {
 };
 
 /**
- *  Ф-ция генерации массива случайной длинны с неповторяющимися элементами
+ *  Генерация массива случайной длинны с неповторяющимися элементами
  */
 
 const getArrayRandomLength = (items, minCountElement = 0) => shuffle(items.slice()).slice(0, getRandomInteger(minCountElement, items.length));
 
 /**
- *  Ф-ция собирает случайное описание
+ *  Сборка случайного описания
  */
 
 const getRandomDescription = (description) => shuffle(description.split(/\.\s/).map((item) => item + '.')).slice(0, 5).join(' ');
 
 
 export {
-  getRandomInteger,
-  getRandomInclusive,
-  getRandomElement,
   getArrayRandomLength,
-  getRandomDescription
+  getRandomDescription,
+  getRandomElement,
+  getRandomInclusive,
+  getRandomInteger
 };
