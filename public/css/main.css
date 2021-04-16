@@ -63,9 +63,15 @@ html {
 
 body {
   box-sizing: border-box;
+  width: 100%;
   max-width: 1240px;
   padding: var(--vertical-gap) var(--horizontal-gap) 0;
-  width: 100%;
+  margin-left: calc(100vw - 100%); /* 1 */
+  margin-right: 0; /* 2 */
+
+  /*  1-2 маргины убирают эффект "прыгающей страницы",
+    * при исчезновении полосы вертикальной прокрутки
+    */
 }
 
 .hide-overflow {

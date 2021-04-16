@@ -7,11 +7,12 @@ import {
   getName
 } from './util/util-popup.js';
 
-import { getRuntime } from './util/util.js';
 import { createListComments } from './comments-popup.js';
+import { getRuntime } from './../util.js';
+import { createElement } from './../util.js';
 
 
-export const createPopupTemplate = (dataFilm) => {
+const createPopupTemplate = (dataFilm) => {
 
   const { filmInfo, comments } = dataFilm;
 
@@ -136,3 +137,26 @@ export const createPopupTemplate = (dataFilm) => {
             </form>
           </section>`;
 };
+
+export default class Popup {
+  constructor(dataFilm) {
+    this._dataFilm = dataFilm;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createPopupTemplate(this._dataFilm);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

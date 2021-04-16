@@ -1,10 +1,12 @@
 import dayjs from 'dayjs';
 import { getDescription } from './util/util-film-card.js'; // Обрезает длинну описания
-import { getRuntime } from './util/util.js';
+import { getRuntime } from './../util.js';
+import { createElement } from './../util.js';
+
 
 const FIRST_GENRE = 0;
 
-export const createFilmCardTemplate = (dataFilm) => {
+const createFilmCardTemplate = (dataFilm) => {
 
   const { id, filmInfo, comments } = dataFilm;
   const { description, title, totalRating, release, runtime, genre, poster } = filmInfo;
@@ -27,3 +29,26 @@ export const createFilmCardTemplate = (dataFilm) => {
             </div>
           </article>`;
 };
+
+export default class FilmCard {
+  constructor(dataFilm) {
+    this._dataFilm = dataFilm;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createFilmCardTemplate(this._dataFilm);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
