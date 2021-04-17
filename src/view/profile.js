@@ -27,7 +27,7 @@ const createFilterItemTemplate = (count) => {
 const createProfileTemplate = (filters) => {
   const [ , history] = filters;
 
-  return history.count === 0 ? null : `<section class="header__profile profile">
+  return history.count === 0 ? ' ' : `<section class="header__profile profile">
                                 ${createFilterItemTemplate(history.count)}
                                 <img class="profile__avatar" src="images/bitmap@2x.png" alt="Avatar" width="35" height="35">
                               </section>`;
@@ -49,7 +49,7 @@ export default class Profile {
       this._element = createElement(this.getTemplate());
     }
 
-    return this._element !== null ?  this._element : '';
+    return this._element;
   }
 
   removeElement() {
