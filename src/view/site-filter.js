@@ -1,4 +1,6 @@
 
+import { createElement } from './../util.js';
+
 const FIRST_LETTER = 0;
 
 
@@ -23,7 +25,7 @@ const createFilterItemTemplate = (filter) => {
 /*  Функция возвращает поля фильтра и поле статистика
    ========================================================================== */
 
-export const createSiteMenuTemplate = (filters) => {
+const createSiteFilterTemplate = (filters) => {
 
   const filterItemsTemplate = filters
     .map((filter) => createFilterItemTemplate(filter))
@@ -37,3 +39,26 @@ export const createSiteMenuTemplate = (filters) => {
             <a href="#stats" class="main-navigation__additional">Stats</a>
           </nav>`;
 };
+
+export default class SiteFilter {
+  constructor(filters) {
+    this._filters = filters;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createSiteFilterTemplate(this._filters);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

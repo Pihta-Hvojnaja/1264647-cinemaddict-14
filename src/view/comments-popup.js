@@ -12,13 +12,7 @@ const dataComments = generateDataComments();
    ========================================================================== */
 
 const getFilmComments = (idsComments, dataComments) => {
-  const currentComments = [];
-
-  idsComments.forEach((idComment) => {
-    currentComments.push(dataComments.find((dataComment) => dataComment.id === idComment));
-  });
-
-  return currentComments;
+  return idsComments.map((idComment) => dataComments.find((dataComment) => dataComment.id === idComment));
 };
 
 

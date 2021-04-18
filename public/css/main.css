@@ -50,6 +50,17 @@ html {
   -webkit-font-smoothing: antialiased
 }
 
+/*  1-2 маргины убирают эффект "прыгающей страницы",
+  * при исчезновении полосы вертикальной прокрутки
+  */
+
+@media screen and (min-width: 960px) {
+  html {
+    margin-left: calc(100vw - 100%); /* 1 */
+    margin-right: 0; /* 2 */
+  }
+}
+
 .visually-hidden {
   position: absolute !important;
   clip: rect(1px 1px 1px 1px);
@@ -63,9 +74,9 @@ html {
 
 body {
   box-sizing: border-box;
+  width: 100%;
   max-width: 1240px;
   padding: var(--vertical-gap) var(--horizontal-gap) 0;
-  width: 100%;
 }
 
 .hide-overflow {

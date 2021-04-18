@@ -1,22 +1,20 @@
 
+import { render, RenderPosition, createClosePopup } from './util.js';
+
 import { generateDataFilm } from './mock/data-film.js';
 import { generateFilter } from './mock/filter.js';
 
-import { createProfileTemplate } from './view/profile.js';
-import { createSiteMenuTemplate } from './view/site-menu.js';
-import { createSortTemplate } from './view/sort.js';
+import ProfileView from './view/profile.js';
+import SiteFilterView from './view/site-filter.js';
+import SortView from './view/sort.js';
 
-import {
-  createSectionFilmsTemplate,
-  createFilmsListTemplate,
-  createListTopRatedTemplate,
-  createListMostCommentedTemplate
-} from './view/sections-films.js';
+import NoFilmsView from './view/no-films.js';
+import SectionFilmsView from './view/section-films.js';
 
-import { createButtonShowMoreTemplate } from './view/button-show-more.js';
-import { createFilmCardTemplate } from './view/film-card.js';
-import { createPopupTemplate } from './view/popup.js';
-import { createFooterStatisticsTemplate } from './view/footer-statistics.js';
+import FilmCardView from './view/film-card.js';
+import PopupView from './view/popup.js';
+import ButtonShowMoreView from './view/button-show-more.js';
+import FooterStatisticsView from './view/footer-statistics.js';
 
 
 /*  Общие переменные
@@ -31,14 +29,6 @@ const mainSiteElement = bodyElement.querySelector('.main');
 const footerStatisticsElement = bodyElement.querySelector('.footer__statistics');
 
 
-/*  Функция отрисовки шаблонов
-   ========================================================================== */
-
-const render = (container, template, place = 'beforeend') => {
-  container.insertAdjacentHTML(place, template);
-};
-
-
 /*  Генерируем данные
    ========================================================================== */
 
@@ -49,135 +39,142 @@ const filters = generateFilter(dataFilms);
 /*  Отрисовываем профиль
    ========================================================================== */
 
-render(headerSiteElement, createProfileTemplate(filters));
+render(headerSiteElement, new ProfileView(filters).getElement(), RenderPosition.BEFOREEND);
 
 
 /*  Отрисовываем меню
    ========================================================================== */
 
-render(mainSiteElement, createSiteMenuTemplate(filters));
+render(mainSiteElement, new SiteFilterView(filters).getElement());
 
 
 /*  Отрисовываем сортировку
    ========================================================================== */
 
-render(mainSiteElement, createSortTemplate());
+render(mainSiteElement, new SortView().getElement());
 
 
-/*  Отрисовываем секции
+/*  Отрисовываем секции и карточки
    ========================================================================== */
 
-// Отрисовываем секцию films
-render(mainSiteElement, createSectionFilmsTemplate());
-const filmsSectionElement = mainSiteElement.querySelector('.films');
+if (dataFilms.length === 0) {
+  render(mainSiteElement, new NoFilmsView().getElement());
 
-// Отрисовываем секции внутри films
-render(filmsSectionElement, createFilmsListTemplate());
-render(filmsSectionElement, createListTopRatedTemplate());
-render(filmsSectionElement, createListMostCommentedTemplate());
+} else {
+  const sectionFilmsElement = new SectionFilmsView().getElement();
 
-// Находим секции
-const filmsListElement = filmsSectionElement.querySelector('.films-list');
-const filmsListContainerElement = filmsListElement.querySelector('.films-list__container');
-const filmsTopRatedElement = filmsSectionElement.querySelector('.films-list--extra:nth-child(2) .films-list__container');
-const filmsMostCommentedElement = filmsSectionElement.querySelector('.films-list--extra:nth-child(3) .films-list__container');
+  /**
+   *  Отрисовываем секцию films
+   */
+
+  render(mainSiteElement, sectionFilmsElement);
+
+  // Находим внутренние секции
+  const allFilmsElement = sectionFilmsElement.querySelector('#all-films');
+  const allFilmsBoxElement = allFilmsElement.querySelector('.films-list__container');
+  const topFilmsRatedElement = sectionFilmsElement.querySelector('#top-rated .films-list__container');
+  const mostCommentedFilmsElement = sectionFilmsElement.querySelector('#most-commented .films-list__container');
+
+  /**
+   *  Отрисовываем первые карточки
+   */
+
+  for (let i = 0; i < Math.min(dataFilms.length, FILM_COUNT_PER_STEP); i++) {
+    render(allFilmsBoxElement, new FilmCardView(dataFilms[i]).getElement());
+  }
+
+  /**
+   *  Отрисовываем кнопку show more
+   */
+
+  if (dataFilms.length > FILM_COUNT_PER_STEP) {
+
+    let renderedFilmCount = FILM_COUNT_PER_STEP;
+    const buttonShowMoreElement = new ButtonShowMoreView().getElement();
+
+    render(allFilmsElement, buttonShowMoreElement);
+
+    // Обработчик кнопки show more
+    buttonShowMoreElement.addEventListener('click', (evt) => {
+      evt.preventDefault();
+      dataFilms
+        .slice(renderedFilmCount, renderedFilmCount + FILM_COUNT_PER_STEP)
+        .forEach((dataFilm) => render(allFilmsBoxElement, new FilmCardView(dataFilm).getElement()));
+
+      renderedFilmCount += FILM_COUNT_PER_STEP;
+
+      if (renderedFilmCount >= dataFilms.length) {
+        buttonShowMoreElement.remove();
+      }
+    });
+  }
+
+  /**
+   *  Отрисовываем карточки в блоках «Top rated movies» и «Most commented»,
+   *  по две карточки в каждом блоке
+   */
+
+  // Функции сортировки данных
+  const getTopRated = (items) => items.slice()
+    .sort((firstElement, secondElement) => secondElement.filmInfo.totalRating - firstElement.filmInfo.totalRating);
+
+  const getMostCommented = (items) => items.slice()
+    .sort((firstElement, secondElement) => secondElement.comments.length - firstElement.comments.length);
+
+  // Сортируем данные для фильмов «Top rated movies» и «Most commented»
+  const dataTopRatedFilms = getTopRated(dataFilms);
+  const dataMostCommentedFilms = getMostCommented(dataFilms);
+
+  // Отрисовываем карточки в блоке «Top rated movies»,
+  for (let i = 0; i < 2; i++) {
+    render(topFilmsRatedElement, new FilmCardView(dataTopRatedFilms[i]).getElement());
+  }
+
+  // Отрисовываем карточки в блоке «Most commented»
+  for (let i = 0; i < 2; i++) {
+    render(mostCommentedFilmsElement, new FilmCardView(dataMostCommentedFilms[i]).getElement());
+  }
+
+  /**
+   *  Обработчик открытия попапа
+   */
+
+  const isClickCardFilm = (evt) => {
+    const currentElement = evt.target.className;
+    return currentElement === 'film-card__poster' ||
+            currentElement === 'film-card__title' ||
+              currentElement === 'film-card__comments';
+  };
 
 
-/*  Отрисовываем первые карточки
-   ========================================================================== */
+  let popupElement = null;
 
-for (let i = 0; i < Math.min(dataFilms.length, FILM_COUNT_PER_STEP); i++) {
-  render(filmsListContainerElement, createFilmCardTemplate(dataFilms[i]));
-}
-
-
-/*  Отрисовываем кнопку show more
-   ========================================================================== */
-
-if (dataFilms.length > FILM_COUNT_PER_STEP) {
-  let renderedFilmCount = FILM_COUNT_PER_STEP;
-
-  render(filmsListElement, createButtonShowMoreTemplate());
-
-  // Обработчик кнопки show more
-  const buttonShowMoreElement = filmsListElement.querySelector('.films-list__show-more');
-
-  buttonShowMoreElement.addEventListener('click', (evt) => {
+  sectionFilmsElement.addEventListener('click', (evt) => {
     evt.preventDefault();
-    dataFilms
-      .slice(renderedFilmCount, renderedFilmCount + FILM_COUNT_PER_STEP)
-      .forEach((dataFilm) => render(filmsListContainerElement, createFilmCardTemplate(dataFilm)));
 
-    renderedFilmCount += FILM_COUNT_PER_STEP;
+    if (popupElement) {
+      popupElement.remove();
+    }
 
-    if (renderedFilmCount >= dataFilms.length) {
-      buttonShowMoreElement.remove();
+    if (isClickCardFilm(evt)) {
+
+      // Создает попап и находит кнопку закрытия попапа
+      popupElement = new PopupView(dataFilms[evt.target.parentElement.id]).getElement();
+      const popupCloseElement = popupElement.querySelector('.film-details__close-btn');
+
+      // Отрисовывает попап
+      render(bodyElement, popupElement);
+
+      // Удаляет вертикальный скролл body
+      bodyElement.classList.add('hide-overflow');
+
+      createClosePopup(evt, bodyElement, popupElement, popupCloseElement);
     }
   });
-}
-
-
-/*  Отрисовываем карточки в блоках «Top rated movies» и «Most commented»,
- *  по две карточки в каждом блоке
-   ========================================================================== */
-
-// Функции сортировки данных
-const getTopRated = (items) => items.slice()
-  .sort((firstElement, secondElement) => secondElement.filmInfo.totalRating - firstElement.filmInfo.totalRating);
-
-const getMostCommented = (items) => items.slice()
-  .sort((firstElement, secondElement) => secondElement.comments.length - firstElement.comments.length);
-
-// Сортируем данные для фильмов «Top rated movies» и «Most commented»
-const dataTopRatedFilms = getTopRated(dataFilms);
-const dataMostCommentedFilms = getMostCommented(dataFilms);
-
-// Отрисовываем карточки в блоке «Top rated movies»,
-for (let i = 0; i < 2; i++) {
-  render(filmsTopRatedElement, createFilmCardTemplate(dataTopRatedFilms[i]));
-}
-
-// Отрисовываем карточки в блоке «Most commented»
-for (let i = 0; i < 2; i++) {
-  render(filmsMostCommentedElement, createFilmCardTemplate(dataMostCommentedFilms[i]));
 }
 
 
 /*  Отрисовываем статистику в footer
    ========================================================================== */
 
-render(footerStatisticsElement, createFooterStatisticsTemplate(dataFilms));
-
-
-/*  Обработчик открытия попапа
-   ========================================================================== */
-
-const isClickCardFilm = (evt) => {
-  const currentElement = evt.target.className;
-  return currentElement === 'film-card__poster' ||
-          currentElement === 'film-card__title' ||
-            currentElement === 'film-card__comments';
-};
-
-filmsSectionElement.addEventListener('click', (evt) => {
-  evt.preventDefault();
-
-  if (bodyElement.querySelector('.film-details')) {
-    bodyElement.querySelector('.film-details').remove();
-  }
-
-  if (isClickCardFilm(evt)) {
-
-    //Отрисовывает попап
-    render(bodyElement, createPopupTemplate(dataFilms[evt.target.parentElement.id]));
-
-    //Находит попап и кнопку закрытия попапа
-    const popupElement = bodyElement.querySelector('.film-details');
-    const filmDetailsCloseBtnElement = popupElement.querySelector('.film-details__close-btn');
-
-    filmDetailsCloseBtnElement.addEventListener('click', () => {
-      popupElement.remove();
-    },
-    { once: true });
-  }
-});
+render(footerStatisticsElement, new FooterStatisticsView(dataFilms).getElement(), RenderPosition.BEFOREEND);
