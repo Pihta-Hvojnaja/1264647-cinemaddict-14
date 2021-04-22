@@ -1,5 +1,5 @@
 
-import { createElement } from './../util.js';
+import AbstractView from './abstract.js';
 
 const FIRST_LETTER = 0;
 
@@ -40,25 +40,13 @@ const createSiteFilterTemplate = (filters) => {
           </nav>`;
 };
 
-export default class SiteFilter {
+export default class SiteFilter extends AbstractView {
   constructor(filters) {
+    super();
     this._filters = filters;
-    this._element = null;
   }
 
   getTemplate() {
     return createSiteFilterTemplate(this._filters);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

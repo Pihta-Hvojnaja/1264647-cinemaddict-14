@@ -1,7 +1,8 @@
 import dayjs from 'dayjs';
-import { getDescription } from './util/util-film-card.js'; // Обрезает длинну описания
-import { getRuntime } from './../util.js';
-import { createElement } from './../util.js';
+import { getDescription } from './../utils/film-card.js'; // Обрезает длинну описания
+import { getRuntime } from './../utils/get-runtime.js';
+
+import AbstractView from './abstract.js';
 
 
 const FIRST_GENRE = 0;
@@ -30,25 +31,13 @@ const createFilmCardTemplate = (dataFilm) => {
           </article>`;
 };
 
-export default class FilmCard {
+export default class FilmCard extends AbstractView {
   constructor(dataFilm) {
+    super();
     this._dataFilm = dataFilm;
-    this._element = null;
   }
 
   getTemplate() {
     return createFilmCardTemplate(this._dataFilm);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

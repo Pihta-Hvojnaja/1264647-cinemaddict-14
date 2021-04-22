@@ -5,16 +5,14 @@ import {
   defineNumberGenre,
   getGenre,
   getName
-} from './util/util-popup.js';
+} from './../utils/popup.js';
 
-import { createListComments } from './comments-popup.js';
-import { getRuntime } from './../util.js';
-import { createElement } from './../util.js';
+import { getRuntime } from './../utils/get-runtime.js';
+
+import AbstractView from './abstract.js';
 
 
-const createPopupTemplate = (dataFilm) => {
-
-  const { filmInfo, comments } = dataFilm;
+const createPopupTemplate = (filmInfo) => {
 
   const { description, title, alternativeTitle, totalRating,
     release, runtime, genre, poster, ageRating, director,
@@ -99,9 +97,6 @@ const createPopupTemplate = (dataFilm) => {
 
               <div class="film-details__bottom-container">
                 <section class="film-details__comments-wrap">
-                  <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${comments.length}</span></h3>
-
-                  ${createListComments(comments)}
 
                   <div class="film-details__new-comment">
                     <div class="film-details__add-emoji-label"></div>
@@ -138,25 +133,25 @@ const createPopupTemplate = (dataFilm) => {
           </section>`;
 };
 
-export default class Popup {
+export default class Popup extends AbstractView {
   constructor(dataFilm) {
+    super();
     this._dataFilm = dataFilm;
-    this._element = null;
+    this._clickHandler = this._clickHandler.bind(this);
+  }
+
+  _clickHandler(evt) {
+    evt.preventDefault();
+    this._callback.click();
   }
 
   getTemplate() {
     return createPopupTemplate(this._dataFilm);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
+  setClickHandler(callback) {
+    this._callback.click = callback;
 
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+    this.getElement().querySelector('.film-details__close-btn').addEventListener('click', this._clickHandler);
   }
 }
