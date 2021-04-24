@@ -1,6 +1,6 @@
 
 // Названия фильмов
-const FILM_NAMES = [
+export const FILM_NAMES = [
   'The Dance of Life',
   'Sagebrush Trail',
   'The Man with the Golden Arm',
@@ -11,7 +11,7 @@ const FILM_NAMES = [
 ];
 
 // Названия файлов постеров
-const POSTER_ADDRESSES = [
+export const POSTER_ADDRESSES = [
   'images/posters/made-for-each-other.png',
   'images/posters/popeye-meets-sinbad.png',
   'images/posters/sagebrush-trail.jpg',
@@ -22,10 +22,10 @@ const POSTER_ADDRESSES = [
 ];
 
 // Исходный текст описания фильма
-const SOURCE_DESCRIPTION = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum. Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus';
+export const SOURCE_DESCRIPTION = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum. Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus';
 
 // Жанры
-const GENRES = [
+export const GENRES = [
   'Musical',
   'Western',
   'Drama',
@@ -35,7 +35,7 @@ const GENRES = [
 ];
 
 // Режиссеры
-const DIRECTORS = [
+export const DIRECTORS = [
   'Franklin J. Scheffner',
   'William Friedkin',
   'Bob Foss',
@@ -46,7 +46,7 @@ const DIRECTORS = [
 ];
 
 // Смайлики
-const EMOJIS = [
+export const EMOJIS = [
   'smile',
   'sleeping',
   'puke',
@@ -54,15 +54,4 @@ const EMOJIS = [
 ];
 
 // Комментарии
-const COMMENTS = [1, 2, 3, 4, 5];
-
-
-export {
-  COMMENTS,
-  DIRECTORS,
-  EMOJIS,
-  FILM_NAMES,
-  GENRES,
-  POSTER_ADDRESSES,
-  SOURCE_DESCRIPTION
-};
+export const COMMENTS = [1, 2, 3, 4, 5];

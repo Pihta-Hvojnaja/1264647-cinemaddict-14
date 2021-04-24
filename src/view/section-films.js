@@ -1,5 +1,5 @@
 
-import { createElement } from '../util.js';
+import AbstractView from './abstract.js';
 
 const createSectionFilmsTemplate = () => {
   return `<section class="films">
@@ -26,24 +26,30 @@ const createSectionFilmsTemplate = () => {
           </section>`;
 };
 
-export default class SectionFilms {
+export default class SectionFilms extends AbstractView {
   constructor() {
-    this._element = null;
+    super();
+    this._clickHandler = this._clickHandler.bind(this);
+    this._evt = null;
+  }
+
+  _clickHandler(evt) {
+    evt.preventDefault();
+    this._evt = evt;
+    this._callback.click();
   }
 
   getTemplate() {
     return createSectionFilmsTemplate();
   }
 
-  getElement() {
-    if (!this._element) {
-      return this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  getEvt() {
+    return this._evt;
   }
 
-  removeElement() {
-    this._element = null;
+  setClickHandler(callback) {
+    this._callback.click = callback;
+
+    this.getElement().addEventListener('click', this._clickHandler);
   }
 }

@@ -1,11 +1,10 @@
 
-
 /*  Функция поля жанры/жанр
    ========================================================================== */
 
-const defineNumberGenre = (genres) => genres.length === 1 ? 'Genre' : 'Genres';
+export const defineNumberGenre = (genres) => genres.length === 1 ? 'Genre' : 'Genres';
 
-const getGenre = (genres) => {
+export const getGenre = (genres) => {
   if (genres.length === 1) { // если жанр один
     return `<span class="film-details__genre">${genres}</span>`;
 
@@ -24,13 +23,17 @@ const getGenre = (genres) => {
 /*  Переводим массив с именами в строку
    ========================================================================== */
 
-const getName = (names) => {
+export const getName = (names) => {
   return names.length > 1 ? names.join(', ') : names + '';
 };
 
 
-export {
-  defineNumberGenre,
-  getGenre,
-  getName
+/*  Если кликнули по нужному элементу карточки фильма, возвращает true
+   ========================================================================== */
+
+export const isClickCardFilm = (evt) => {
+  const currentElement = evt.target.className;
+  return currentElement === 'film-card__poster' ||
+          currentElement === 'film-card__title' ||
+            currentElement === 'film-card__comments';
 };

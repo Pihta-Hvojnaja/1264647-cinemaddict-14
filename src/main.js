@@ -1,5 +1,10 @@
 
-import { render, RenderPosition, createClosePopup } from './util.js';
+import { render, removeComponent } from './utils/render.js';
+import { getTopRated, getMostCommented } from './utils/sort-data.js';
+import { isClickCardFilm } from './utils/popup.js';
+import { createPopup } from './utils/create-popup.js';
+import { createCommentRemover } from './utils/comment-remover.js';
+import { createPopupCloser } from './utils/popup-closer.js';
 
 import { generateDataFilm } from './mock/data-film.js';
 import { generateFilter } from './mock/filter.js';
@@ -13,6 +18,7 @@ import SectionFilmsView from './view/section-films.js';
 
 import FilmCardView from './view/film-card.js';
 import PopupView from './view/popup.js';
+import CommentsView from './view/comments.js';
 import ButtonShowMoreView from './view/button-show-more.js';
 import FooterStatisticsView from './view/footer-statistics.js';
 
@@ -39,48 +45,48 @@ const filters = generateFilter(dataFilms);
 /*  Отрисовываем профиль
    ========================================================================== */
 
-render(headerSiteElement, new ProfileView(filters).getElement(), RenderPosition.BEFOREEND);
+render(headerSiteElement, new ProfileView(filters));
 
 
 /*  Отрисовываем меню
    ========================================================================== */
 
-render(mainSiteElement, new SiteFilterView(filters).getElement());
+render(mainSiteElement, new SiteFilterView(filters));
 
 
 /*  Отрисовываем сортировку
    ========================================================================== */
 
-render(mainSiteElement, new SortView().getElement());
+render(mainSiteElement, new SortView());
 
 
 /*  Отрисовываем секции и карточки
    ========================================================================== */
 
 if (dataFilms.length === 0) {
-  render(mainSiteElement, new NoFilmsView().getElement());
+  render(mainSiteElement, new NoFilmsView());
 
 } else {
-  const sectionFilmsElement = new SectionFilmsView().getElement();
+  const sectionFilmsComponent = new SectionFilmsView();
 
   /**
    *  Отрисовываем секцию films
    */
 
-  render(mainSiteElement, sectionFilmsElement);
+  render(mainSiteElement, sectionFilmsComponent);
 
   // Находим внутренние секции
-  const allFilmsElement = sectionFilmsElement.querySelector('#all-films');
+  const allFilmsElement = sectionFilmsComponent.getElement().querySelector('#all-films');
   const allFilmsBoxElement = allFilmsElement.querySelector('.films-list__container');
-  const topFilmsRatedElement = sectionFilmsElement.querySelector('#top-rated .films-list__container');
-  const mostCommentedFilmsElement = sectionFilmsElement.querySelector('#most-commented .films-list__container');
+  const topFilmsRatedElement = sectionFilmsComponent.getElement().querySelector('#top-rated .films-list__container');
+  const mostCommentedFilmsElement = sectionFilmsComponent.getElement().querySelector('#most-commented .films-list__container');
 
   /**
    *  Отрисовываем первые карточки
    */
 
   for (let i = 0; i < Math.min(dataFilms.length, FILM_COUNT_PER_STEP); i++) {
-    render(allFilmsBoxElement, new FilmCardView(dataFilms[i]).getElement());
+    render(allFilmsBoxElement, new FilmCardView(dataFilms[i]));
   }
 
   /**
@@ -90,21 +96,20 @@ if (dataFilms.length === 0) {
   if (dataFilms.length > FILM_COUNT_PER_STEP) {
 
     let renderedFilmCount = FILM_COUNT_PER_STEP;
-    const buttonShowMoreElement = new ButtonShowMoreView().getElement();
+    const buttonShowMoreElement = new ButtonShowMoreView();
 
     render(allFilmsElement, buttonShowMoreElement);
 
     // Обработчик кнопки show more
-    buttonShowMoreElement.addEventListener('click', (evt) => {
-      evt.preventDefault();
+    buttonShowMoreElement.setClickHandler(() => {
       dataFilms
         .slice(renderedFilmCount, renderedFilmCount + FILM_COUNT_PER_STEP)
-        .forEach((dataFilm) => render(allFilmsBoxElement, new FilmCardView(dataFilm).getElement()));
+        .forEach((dataFilm) => render(allFilmsBoxElement, new FilmCardView(dataFilm)));
 
       renderedFilmCount += FILM_COUNT_PER_STEP;
 
       if (renderedFilmCount >= dataFilms.length) {
-        buttonShowMoreElement.remove();
+        removeComponent(buttonShowMoreElement);
       }
     });
   }
@@ -114,61 +119,48 @@ if (dataFilms.length === 0) {
    *  по две карточки в каждом блоке
    */
 
-  // Функции сортировки данных
-  const getTopRated = (items) => items.slice()
-    .sort((firstElement, secondElement) => secondElement.filmInfo.totalRating - firstElement.filmInfo.totalRating);
-
-  const getMostCommented = (items) => items.slice()
-    .sort((firstElement, secondElement) => secondElement.comments.length - firstElement.comments.length);
-
   // Сортируем данные для фильмов «Top rated movies» и «Most commented»
   const dataTopRatedFilms = getTopRated(dataFilms);
   const dataMostCommentedFilms = getMostCommented(dataFilms);
 
   // Отрисовываем карточки в блоке «Top rated movies»,
   for (let i = 0; i < 2; i++) {
-    render(topFilmsRatedElement, new FilmCardView(dataTopRatedFilms[i]).getElement());
+    render(topFilmsRatedElement, new FilmCardView(dataTopRatedFilms[i]));
   }
 
   // Отрисовываем карточки в блоке «Most commented»
   for (let i = 0; i < 2; i++) {
-    render(mostCommentedFilmsElement, new FilmCardView(dataMostCommentedFilms[i]).getElement());
+    render(mostCommentedFilmsElement, new FilmCardView(dataMostCommentedFilms[i]));
   }
 
   /**
    *  Обработчик открытия попапа
    */
 
-  const isClickCardFilm = (evt) => {
-    const currentElement = evt.target.className;
-    return currentElement === 'film-card__poster' ||
-            currentElement === 'film-card__title' ||
-              currentElement === 'film-card__comments';
-  };
+  let popupComponent = null;
 
+  sectionFilmsComponent.setClickHandler(() => {
 
-  let popupElement = null;
-
-  sectionFilmsElement.addEventListener('click', (evt) => {
-    evt.preventDefault();
-
-    if (popupElement) {
-      popupElement.remove();
+    if (popupComponent) {
+      removeComponent(popupComponent);
     }
 
-    if (isClickCardFilm(evt)) {
+    if (isClickCardFilm(sectionFilmsComponent.getEvt())) {
 
-      // Создает попап и находит кнопку закрытия попапа
-      popupElement = new PopupView(dataFilms[evt.target.parentElement.id]).getElement();
-      const popupCloseElement = popupElement.querySelector('.film-details__close-btn');
+      // Получаем данные выбранного фильма
+      const dataFilm = dataFilms[sectionFilmsComponent.getEvt().target.parentElement.id];
+      const { filmInfo, comments } = dataFilm;
 
       // Отрисовывает попап
-      render(bodyElement, popupElement);
+      popupComponent = new PopupView(filmInfo);
+      const commentsComponent = new CommentsView(comments);
+      createPopup(bodyElement, popupComponent, commentsComponent);
 
-      // Удаляет вертикальный скролл body
-      bodyElement.classList.add('hide-overflow');
+      // Обработчик кнопки удаления комментариев
+      createCommentRemover(commentsComponent);
 
-      createClosePopup(evt, bodyElement, popupElement, popupCloseElement);
+      // Обработчики закрытия попапа
+      createPopupCloser(bodyElement, popupComponent);
     }
   });
 }
@@ -177,4 +169,4 @@ if (dataFilms.length === 0) {
 /*  Отрисовываем статистику в footer
    ========================================================================== */
 
-render(footerStatisticsElement, new FooterStatisticsView(dataFilms).getElement(), RenderPosition.BEFOREEND);
+render(footerStatisticsElement, new FooterStatisticsView(dataFilms));

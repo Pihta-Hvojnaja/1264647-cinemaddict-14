@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { generateDataComments } from '../mock/data-comments.js';
+import AbstractView from './abstract.js';
 
 
 /*  Генерируем данные для комментариев
@@ -22,9 +23,9 @@ const getFilmComments = (idsComments, dataComments) => {
 const createComments = (filmComments) => {
 
   return filmComments.reduce((accumulator, filmComment) => {
-    const { comment, emotion, author, date } = filmComment;
+    const { id, comment, emotion, author, date } = filmComment;
 
-    accumulator += ` <li class="film-details__comment">
+    accumulator += ` <li id="${id}" class="film-details__comment">
                         <span class="film-details__comment-emoji">
                           <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-smile">
                         </span>
@@ -33,7 +34,7 @@ const createComments = (filmComments) => {
                           <p class="film-details__comment-info">
                             <span class="film-details__comment-author">${author}</span>
                             <span class="film-details__comment-day">${dayjs(date).format('YYYY/MM/DD hh:mm')}</span>
-                            <button class="film-details__comment-delete">Delete</button>
+                            <button class="film-details__comment-delete" type="button">Delete</button>
                           </p>
                         </div>
                       </li>`;
@@ -46,11 +47,49 @@ const createComments = (filmComments) => {
 /*  Функция возвращает список комментариев
    ========================================================================== */
 
-export const createListComments = (idsComments) => {
+const createListCommentsTemplate = (idsComments) => {
 
   const filmComments = getFilmComments(idsComments, dataComments);
 
-  return `<ul class="film-details__comments-list">
-            ${createComments(filmComments)}
-          </ul>`;
+  return `<section class="film-details__comments">
+            <h3 class="film-details__comments-title">
+                Comments
+              <span class="film-details__comments-count">
+                ${filmComments.length}
+              </span>
+            </h3>
+
+            <ul class="film-details__comments-list">
+              ${createComments(filmComments)}
+            </ul>
+          </section>`;
 };
+
+export default class Comments extends AbstractView {
+  constructor(idsComments) {
+    super();
+    this._idsComments = idsComments;
+    this._clickHandler = this._clickHandler.bind(this);
+    this._evt = null;
+  }
+
+  _clickHandler(evt) {
+    evt.preventDefault();
+    this._evt = evt;
+    this._callback.click();
+  }
+
+  getTemplate() {
+    return createListCommentsTemplate(this._idsComments);
+  }
+
+  getEvt() {
+    return this._evt;
+  }
+
+  setClickHandler(callback) {
+    this._callback.click = callback;
+
+    this.getElement().querySelector('.film-details__comments-list').addEventListener('click', this._clickHandler);
+  }
+}
