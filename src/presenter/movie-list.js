@@ -1,17 +1,16 @@
 
-import { render, removeComponent, RenderPosition } from './../utils/render.js';
-import { getTopRated, getMostCommented } from './../utils/sort-data.js';
-import { createCommentRemover } from './../utils/comment-remover.js';
+import { render, removeComponent } from '../utils/render.js';
+import { getTopRated, getMostCommented } from '../utils/sort-data.js';
 
-import SortView from './../view/sort.js';
+import SortView from '../view/sort.js';
 
-import NoFilmsView from './../view/no-films.js';
-import SectionFilmsView from './../view/section-films.js';
+import NoFilmsView from '../view/no-films.js';
+import SectionFilmsView from '../view/section-films.js';
 
-import CardFilmView from './../view/film-card.js';
-import PopupView from './../view/popup.js';
-import CommentsView from './../view/comments.js';
-import ButtonShowMoreView from './../view/button-show-more.js';
+import CardFilmView from '../view/film-card.js';
+import ButtonShowMoreView from '../view/button-show-more.js';
+
+import PopupPresenter from './popup.js';
 
 const FILM_COUNT_PER_STEP = 5;
 const FILM_COUNT_LIST_EXTRA = 2;
@@ -21,7 +20,7 @@ const FILM_COUNT_LIST_EXTRA = 2;
  * @param {Object} listFilmsContainer
  * @param {Object} popupContainer
  */
-export default class Films {
+export default class MovieList {
 
   constructor(listFilmsContainer, popupContainer) {
     this._listFilmsContainer = listFilmsContainer;
@@ -31,9 +30,9 @@ export default class Films {
     this._sortComponent = new SortView();
     this._noFilmsComponent = new NoFilmsView();
     this._sectionFilmsComponent = new SectionFilmsView();
-    this._popupComponent = null;
-    this._commentsComponent = null;
     this._buttonShowMoreComponent = new ButtonShowMoreView();
+
+    this._popupPresenter = new PopupPresenter(this._popupContainer);
 
     this._allFilmsElement = this._sectionFilmsComponent.getElement().querySelector('#all-films');
     this._filmsContainerElement = this._allFilmsElement.querySelector('.films-list__container');
@@ -43,8 +42,6 @@ export default class Films {
     this._mostCommentedContainerElement = this._mostCommentedElement.querySelector('.films-list__container');
 
     this._onButtomShowMoreClick = this._onButtomShowMoreClick.bind(this);
-    this._onCloseButtonClick = this._onCloseButtonClick.bind(this);
-    this._onEscKeyDown = this._onEscKeyDown.bind(this);
     this._onCardFilmClick = this._onCardFilmClick.bind(this);
   }
 
@@ -161,15 +158,9 @@ export default class Films {
       return;
     }
 
-    /**
-     * @type {Array} - отсортированный по рейтингу массив данных
-     */
     const dataTopRatedFilms = getTopRated(dataFilms);
-
-    /**
-     * @type {Array} - отсортированный по кол-ву комментариев массив данных
-     */
     const dataMostCommentedFilms = getMostCommented(dataFilms);
+
     this._renderSectionFilms();
     this._renderAllFilms(this._dataFilms, 0, FILM_COUNT_PER_STEP);
     this._renderButtomShowMore();
@@ -177,22 +168,10 @@ export default class Films {
     this._renderMostCommentedFilms(dataMostCommentedFilms);
   }
 
-  /** Отрисовывает попап*/
-  _renderPopup() {
-    this._popupContainer.classList.add('hide-overflow');
-    render(this._popupContainer, this._popupComponent);
-    render(
-      this._popupComponent.getElement().querySelector('.film-details__comments-wrap'),
-      this._commentsComponent,
-      RenderPosition.AFTERBEGIN,
+  _getDataCurrentFilm() {
+    return this._dataFilms.find(
+      (dataFilm) => dataFilm.id === this._sectionFilmsComponent.getIdCardFilm(),
     );
-  }
-
-  _closePopup() {
-    this._popupContainer.classList.remove('hide-overflow');
-    removeComponent(this._commentsComponent);
-    removeComponent(this._popupComponent);
-    document.removeEventListener('keydown', this._onEscKeyDown);
   }
 
   /**
@@ -211,36 +190,8 @@ export default class Films {
     }
   }
 
-  _onCloseButtonClick() {
-    this._closePopup();
-  }
-
-  _onEscKeyDown(evt) {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
-      this._closePopup();
-    }
-  }
-
   _onCardFilmClick() {
-    if (this._popupComponent) {
-      this._closePopup();
-    }
-
-    /**
-     * @type {Object} - Данные выбранного фильма
-     */
-    const dataFilm = this._dataFilms[this._sectionFilmsComponent.getIdCardFilm()];
-    const { filmInfo, comments } = dataFilm;
-
-    this._popupComponent = new PopupView(filmInfo);
-    this._commentsComponent = new CommentsView(comments);
-
-    this._renderPopup();
-
-    // Обработчик кнопки удаления комментариев
-    createCommentRemover(this._commentsComponent);
-
-    this._popupComponent.setClickHandler(this._onCloseButtonClick);
-    document.addEventListener('keydown', this._onEscKeyDown);
+    const dataFilm = this._getDataCurrentFilm();
+    this._popupPresenter.init(dataFilm);
   }
 }

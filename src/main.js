@@ -8,7 +8,7 @@ import ProfileView from './view/profile.js';
 import SiteFilterView from './view/site-filter.js';
 import FooterStatisticsView from './view/footer-statistics.js';
 
-import FilmsPresenter from './presenter/list-films.js';
+import MovieListPresenter from './presenter/movie-list.js';
 
 
 /*  Общие переменные
@@ -44,8 +44,8 @@ render(mainSiteElement, new SiteFilterView(filters));
 /*  Отрисовываем фильмы
    ========================================================================== */
 
-const filmsPresenter = new FilmsPresenter(mainSiteElement, bodyElement);
-filmsPresenter.init(dataFilms);
+const movieListPresenter = new MovieListPresenter(mainSiteElement, bodyElement);
+movieListPresenter.init(dataFilms);
 
 
 /*  Отрисовываем статистику в footer
