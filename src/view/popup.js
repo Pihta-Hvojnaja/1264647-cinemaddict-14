@@ -7,7 +7,7 @@ import {
   getName
 } from './../utils/popup.js';
 
-import { getRuntime } from './../utils/get-runtime.js';
+import { reformatRuntime } from '../utils/reformat-runtime.js';
 
 import AbstractView from './abstract.js';
 
@@ -63,7 +63,7 @@ const createPopupTemplate = (filmInfo) => {
                       </tr>
                       <tr class="film-details__row">
                         <td class="film-details__term">Runtime</td>
-                        <td class="film-details__cell">${getRuntime(runtime)}</td>
+                        <td class="film-details__cell">${reformatRuntime(runtime)}</td>
                       </tr>
                       <tr class="film-details__row">
                         <td class="film-details__term">Country</td>
