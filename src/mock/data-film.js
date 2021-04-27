@@ -19,9 +19,6 @@ import {
 } from './util-data.js';
 
 
-/*  Функция генерации данных для карточек и попапа
-   ========================================================================== */
-
 export const generateDataFilm = () => {
   const nameFilm = getRandomElement(FILM_NAMES);
 

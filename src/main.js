@@ -2,6 +2,7 @@
 import { render } from './utils/render.js';
 
 import { generateDataFilm } from './mock/data-film.js';
+import { generateDataComments } from './mock/data-comments.js';
 import { generateFilter } from './mock/filter.js';
 
 import ProfileView from './view/profile.js';
@@ -26,6 +27,7 @@ const footerStatisticsElement = bodyElement.querySelector('.footer__statistics')
    ========================================================================== */
 
 const dataFilms = new Array(FILM_COUNT).fill().map(generateDataFilm);
+const dataComments = generateDataComments();
 const filters = generateFilter(dataFilms);
 
 
@@ -45,7 +47,7 @@ render(mainSiteElement, new SiteFilterView(filters));
    ========================================================================== */
 
 const movieListPresenter = new MovieListPresenter(mainSiteElement, bodyElement);
-movieListPresenter.init(dataFilms);
+movieListPresenter.init(dataFilms, dataComments);
 
 
 /*  Отрисовываем статистику в footer

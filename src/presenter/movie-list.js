@@ -1,25 +1,23 @@
 
 import { render, removeComponent } from '../utils/render.js';
 import { getTopRated, getMostCommented } from '../utils/sort-data.js';
+import { updateItems } from '../utils/update-items.js';
 
 import SortView from '../view/sort.js';
 
 import NoFilmsView from '../view/no-films.js';
 import SectionFilmsView from '../view/section-films.js';
 
-import CardFilmView from '../view/film-card.js';
 import ButtonShowMoreView from '../view/button-show-more.js';
 
+import MoviePresenter from './movie.js';
 import PopupPresenter from './popup.js';
+
 
 const FILM_COUNT_PER_STEP = 5;
 const FILM_COUNT_LIST_EXTRA = 2;
 
-/**
- * @class - презентер Films, управляет сортировкой, списком фильмов и попапом
- * @param {Object} listFilmsContainer
- * @param {Object} popupContainer
- */
+
 export default class MovieList {
 
   constructor(listFilmsContainer, popupContainer) {
@@ -32,6 +30,7 @@ export default class MovieList {
     this._sectionFilmsComponent = new SectionFilmsView();
     this._buttonShowMoreComponent = new ButtonShowMoreView();
 
+    this._moviePresenters = [];
     this._popupPresenter = new PopupPresenter(this._popupContainer);
 
     this._allFilmsElement = this._sectionFilmsComponent.getElement().querySelector('#all-films');
@@ -43,24 +42,19 @@ export default class MovieList {
 
     this._onButtomShowMoreClick = this._onButtomShowMoreClick.bind(this);
     this._onCardFilmClick = this._onCardFilmClick.bind(this);
+    this._onFilmChange = this._onFilmChange.bind(this);
   }
 
-  /**
-   * Функция-иницилизатор
-   * @param {Array} dataFilms - данные фильмов
-   */
-  init(dataFilms) {
+  init(dataFilms, dataComments) {
     this._dataFilms = dataFilms.slice();
+    this._dataComments = dataComments;
 
     render(this._listFilmsContainer, this._sortComponent);
-    this._renderSectionFilms();
     this._renderListFilms(dataFilms);
     this._sectionFilmsComponent.setClickHandler(this._onCardFilmClick);
   }
 
-  /**
-   * Отрисовывает пустой список
-   */
+  /** Отрисовывает пустой список */
   _renderNoFilms() {
     render(this._listFilmsContainer, this._noFilmsComponent);
   }
@@ -70,15 +64,17 @@ export default class MovieList {
     render(this._listFilmsContainer, this._sectionFilmsComponent);
   }
 
-  /**
-   * Отрисовывает основной список фильмов
-   * @param {Array} dataFilms - данные о Фильмах
-   * @param {number} from - отрисовать ОТ элемента
-   * @param {number} to - отрисовать ДО элемента
-   */
+  /** Отрисовывает карточку фильма */
+  _renderFilm(container, dataFilm) {
+    const moviePresenter = new MoviePresenter(container, this._onFilmChange);
+    moviePresenter.init(dataFilm);
+    this._moviePresenters.push(moviePresenter);
+  }
+
+  /** Отрисовывает основной список фильмов */
   _renderAllFilms(dataFilms, from, to) {
     dataFilms.slice(from, to)
-      .forEach((dataFilm) => render(this._filmsContainerElement, new CardFilmView(dataFilm)));
+      .forEach((dataFilm) => this._renderFilm(this._filmsContainerElement, dataFilm));
   }
 
   /** Отрисовывает кнопку Show more */
@@ -97,12 +93,12 @@ export default class MovieList {
   _isTopRatedFilms(firstElement) {
     if (firstElement.filmInfo.totalRating === 0) {
       this._topRatedElement.classList.add('films-list--extra-none');
-      this._mostCommentedElement.classList.add('.films-list--no-border::before');
+      this._mostCommentedElement.classList.add('films-list--no-border');
       return;
     }
 
     this._topRatedElement.classList.remove('films-list--extra-none');
-    this._mostCommentedElement.classList.remove('.films-list--no-border::before');
+    this._mostCommentedElement.classList.remove('films-list--no-border');
     return true;
   }
 
@@ -115,7 +111,7 @@ export default class MovieList {
 
     if (this._isTopRatedFilms(firstElement)) {
       dataTopRatedFilms.slice(0, FILM_COUNT_LIST_EXTRA)
-        .forEach((dataFilm) => render( this._topRatedContainerElement, new CardFilmView(dataFilm)));
+        .forEach((dataFilm) => this._renderFilm(this._topRatedContainerElement, dataFilm));
     }
   }
 
@@ -143,7 +139,7 @@ export default class MovieList {
 
     if (this._isMostCommentedFilms(firstElement)) {
       dataMostCommentedFilms.slice(0, FILM_COUNT_LIST_EXTRA)
-        .forEach((dataFilm) => render( this._mostCommentedContainerElement, new CardFilmView(dataFilm)));
+        .forEach((dataFilm) => this._renderFilm(this._mostCommentedContainerElement, dataFilm));
     }
   }
 
@@ -168,15 +164,27 @@ export default class MovieList {
     this._renderMostCommentedFilms(dataMostCommentedFilms);
   }
 
+  _clearFilmList() {
+    this._moviePresenters.forEach((presenter) => presenter.destroy());
+
+    this._moviePresenters = [];
+    this._renderedFilmCount = FILM_COUNT_PER_STEP;
+    removeComponent(this._buttonShowMoreComponent);
+  }
+
+  /** Функция находит по id выбранной карточки данные фильма */
   _getDataCurrentFilm() {
     return this._dataFilms.find(
       (dataFilm) => dataFilm.id === this._sectionFilmsComponent.getIdCardFilm(),
     );
   }
 
-  /**
-   * @callback - обработчик кнопки Show More
-   */
+  _renderPopup() {
+    const dataFilm = this._getDataCurrentFilm();
+    this._popupPresenter.init(dataFilm, this._dataComments, this._onFilmChange);
+  }
+
+  /** Обработчик кнопки Show More */
   _onButtomShowMoreClick() {
     this._renderAllFilms(
       this._dataFilms,
@@ -190,8 +198,19 @@ export default class MovieList {
     }
   }
 
+  /** Обработчик клика по карточке фильма */
   _onCardFilmClick() {
-    const dataFilm = this._getDataCurrentFilm();
-    this._popupPresenter.init(dataFilm);
+    this._renderPopup();
+  }
+
+  /** Обработчик изменений карточки фильма */
+  _onFilmChange(updatedFilm) {
+    this._dataFilms = updateItems(this._dataFilms, updatedFilm);
+
+    /** @type {Array} - Содержит все копии презентеров карточки фильма */
+    const moviePresenterCopies = this._moviePresenters
+      .filter((presenter) => presenter.getId() === updatedFilm.id);
+
+    moviePresenterCopies.forEach((presenter) => presenter.init(updatedFilm));
   }
 }

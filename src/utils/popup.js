@@ -40,18 +40,3 @@ export const getGenre = (genres) => {
 export const getName = (names) => {
   return names.length > ONE_NAME ? names.join(', ') : names + '';
 };
-
-
-/**
- * Функция определяет клик по необходимому элементу карточки фильма
- * @param {Object} evt - принимает событие клика
- * @returns {Boolean} - возвращает boolean значение
- */
-export const isClickCardFilm = (evt) => {
-
-  const currentElement = evt.target.className;
-
-  return currentElement === 'film-card__poster' ||
-          currentElement === 'film-card__title' ||
-            currentElement === 'film-card__comments';
-};
