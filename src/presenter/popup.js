@@ -38,14 +38,11 @@ export default class Popup {
     this._commentsComponent = new CommentsView(filmComments);
     this._popupComponent = new PopupView(this._dataFilm);
 
-    this._popupComponent.setWatchlistChangeHandler(this._onWatchlistChange);
-    this._popupComponent.setWatchedChangeHandler(this._onWatchedChange);
-    this._popupComponent.setFavoriteChangeHandler(this._onFavoriteChange);
-    this._commentsComponent.setClickDeleteHandler(this._onClickDeleteComment);
-    this._popupComponent.setCloseClickHandler(this._onCloseButtonClick);
-    document.addEventListener('keydown', this._onEscKeyDown);
-
     this._renderPopup();
+  }
+
+  setDataFilm(updatedFilm) {
+    this._dataFilm = updatedFilm;
   }
 
   /**
@@ -61,12 +58,27 @@ export default class Popup {
   /** Отрисовывает попап*/
   _renderPopup() {
     this._popupContainer.classList.add('hide-overflow');
+
+    this._popupComponent.setWatchlistChangeHandler(this._onWatchlistChange);
+    this._popupComponent.setWatchedChangeHandler(this._onWatchedChange);
+    this._popupComponent.setFavoriteChangeHandler(this._onFavoriteChange);
+    this._commentsComponent.setClickDeleteHandler(this._onClickDeleteComment);
+    this._popupComponent.setCloseClickHandler(this._onCloseButtonClick);
+    document.addEventListener('keydown', this._onEscKeyDown);
+
     render(this._popupContainer, this._popupComponent);
     render(
       this._popupComponent.getElement().querySelector('.film-details__comments-wrap'),
       this._commentsComponent,
       RenderPosition.AFTERBEGIN,
     );
+  }
+
+  _closePopup() {
+    this._popupContainer.classList.remove('hide-overflow');
+    removeComponent(this._commentsComponent);
+    removeComponent(this._popupComponent);
+    document.removeEventListener('keydown', this._onEscKeyDown);
   }
 
   _replaceComments(dataFilm) {
@@ -76,15 +88,9 @@ export default class Popup {
     this._commentsComponent = new CommentsView(filmComments);
 
     this._commentsComponent.setClickDeleteHandler(this._onClickDeleteComment);
+
     replaceComponent(this._commentsComponent, prevCommentsComponent);
     removeComponent(prevCommentsComponent);
-  }
-
-  _closePopup() {
-    this._popupContainer.classList.remove('hide-overflow');
-    removeComponent(this._commentsComponent);
-    removeComponent(this._popupComponent);
-    document.removeEventListener('keydown', this._onEscKeyDown);
   }
 
   _onCloseButtonClick() {
@@ -95,10 +101,6 @@ export default class Popup {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       this._closePopup();
     }
-  }
-
-  setDataFilm(updatedFilm) {
-    this._dataFilm = updatedFilm;
   }
 
   _onWatchlistChange() {
