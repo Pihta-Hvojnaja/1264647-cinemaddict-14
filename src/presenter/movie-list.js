@@ -1,7 +1,7 @@
 
 import { render, removeComponent } from '../utils/render.js';
 import { getTopRated, getMostCommented } from '../utils/sort-data.js';
-import { updateItems } from '../utils/update-items.js';
+import { updateItems, removeItemFromItems } from '../utils/update-items.js';
 
 import SortView from '../view/sort.js';
 
@@ -43,11 +43,12 @@ export default class MovieList {
     this._onButtomShowMoreClick = this._onButtomShowMoreClick.bind(this);
     this._onCardFilmClick = this._onCardFilmClick.bind(this);
     this._onFilmChange = this._onFilmChange.bind(this);
+    this._onCommentsChange = this._onCommentsChange.bind(this);
   }
 
   init(dataFilms, dataComments) {
     this._dataFilms = dataFilms.slice();
-    this._dataComments = dataComments;
+    this._dataComments = dataComments.slice();
 
     render(this._listFilmsContainer, this._sortComponent);
     this._renderListFilms(dataFilms);
@@ -181,7 +182,7 @@ export default class MovieList {
 
   _renderPopup() {
     const dataFilm = this._getDataCurrentFilm();
-    this._popupPresenter.init(dataFilm, this._dataComments, this._onFilmChange);
+    this._popupPresenter.init(dataFilm, this._dataComments, this._onFilmChange, this._onCommentsChange);
   }
 
   /** Обработчик кнопки Show More */
@@ -205,6 +206,8 @@ export default class MovieList {
 
   /** Обработчик изменений карточки фильма */
   _onFilmChange(updatedFilm) {
+    this._popupPresenter.setDataFilm(updatedFilm);
+
     this._dataFilms = updateItems(this._dataFilms, updatedFilm);
 
     /** @type {Array} - Содержит все копии презентеров карточки фильма */
@@ -212,5 +215,9 @@ export default class MovieList {
       .filter((presenter) => presenter.getId() === updatedFilm.id);
 
     moviePresenterCopies.forEach((presenter) => presenter.init(updatedFilm));
+  }
+
+  _onCommentsChange(idComment) {
+    this._dataComments = removeItemFromItems(this._dataComments, idComment);
   }
 }

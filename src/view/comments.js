@@ -57,27 +57,27 @@ export default class Comments extends AbstractView {
   constructor(filmComments) {
     super();
     this._filmComments = filmComments;
-    this._clickHandler = this._clickHandler.bind(this);
-    this._evt = null;
-  }
-
-  _clickHandler(evt) {
-    evt.preventDefault();
-    this._evt = evt;
-    this._callback.click();
+    this._clickDeleteHandler = this._clickDeleteHandler.bind(this);
+    this._idCommentElementToDelete = null;
   }
 
   getTemplate() {
     return createListCommentsTemplate(this._filmComments);
   }
 
-  getEvt() {
-    return this._evt;
+  getIdCommentToDelete() {
+    return this._idCommentElementToDelete;
   }
 
-  setClickHandler(callback) {
+  setClickDeleteHandler(callback) {
     this._callback.click = callback;
 
-    this.getElement().querySelector('.film-details__comments-list').addEventListener('click', this._clickHandler);
+    this.getElement().querySelector('.film-details__comments-list').addEventListener('click', this._clickDeleteHandler);
+  }
+
+  _clickDeleteHandler(evt) {
+    evt.preventDefault();
+    this._idCommentElementToDelete = parseInt(evt.target.closest('.film-details__comment').id);
+    this._callback.click();
   }
 }

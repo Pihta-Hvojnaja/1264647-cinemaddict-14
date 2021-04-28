@@ -1,5 +1,6 @@
-import { render, removeComponent, RenderPosition } from '../utils/render.js';
-import { createCommentRemover } from '../utils/comment-remover.js';
+import { render, removeComponent, replaceComponent, RenderPosition } from '../utils/render.js';
+import { removeItemFromItems } from '../utils/update-items.js';
+import { updateDataWatchlist, updateDataWatched, updateDataFavorite } from '../utils/button-controls.js';
 
 import PopupView from '../view/popup.js';
 import CommentsView from '../view/comments.js';
@@ -18,16 +19,17 @@ export default class Popup {
     this._onWatchlistChange = this._onWatchlistChange.bind(this);
     this._onWatchedChange = this._onWatchedChange.bind(this);
     this._onFavoriteChange = this._onFavoriteChange.bind(this);
+    this._onClickDeleteComment = this._onClickDeleteComment.bind(this);
   }
 
-  init(dataFilm, dataComments, changeData) {
+  init(dataFilm, dataComments, changeData, changeComments) {
 
     this._dataFilm = dataFilm;
     this._dataComments = dataComments.slice();
     this._changeData = changeData;
+    this._changeComments = changeComments;
 
-    const { comments } = dataFilm;
-    const filmComments = this._getCommentsCurrentFilm(comments);
+    const filmComments = this._getCommentsCurrentFilm(this._dataFilm);
 
     if (this._popupComponent) {
       this._closePopup();
@@ -39,14 +41,11 @@ export default class Popup {
     this._popupComponent.setWatchlistChangeHandler(this._onWatchlistChange);
     this._popupComponent.setWatchedChangeHandler(this._onWatchedChange);
     this._popupComponent.setFavoriteChangeHandler(this._onFavoriteChange);
-
-    this._renderPopup();
-
-    /** Обработчик кнопки удаления комментариев */
-    createCommentRemover(this._commentsComponent);
-
+    this._commentsComponent.setClickDeleteHandler(this._onClickDeleteComment);
     this._popupComponent.setCloseClickHandler(this._onCloseButtonClick);
     document.addEventListener('keydown', this._onEscKeyDown);
+
+    this._renderPopup();
   }
 
   /**
@@ -54,8 +53,9 @@ export default class Popup {
    * @param {Array} data - массив id комментариев из dataFilms
    * @returns {Array} - возвращает массив комментариев выбранного фильма
    */
-  _getCommentsCurrentFilm(idsComments) {
-    return idsComments.map((idComment) => this._dataComments.find((dataComment) => dataComment.id === idComment));
+  _getCommentsCurrentFilm(dataFilm) {
+    const { comments } = dataFilm;
+    return comments.map((idComment) => this._dataComments.find((dataComment) => dataComment.id === idComment));
   }
 
   /** Отрисовывает попап*/
@@ -67,6 +67,17 @@ export default class Popup {
       this._commentsComponent,
       RenderPosition.AFTERBEGIN,
     );
+  }
+
+  _replaceComments(dataFilm) {
+    const prevCommentsComponent = this._commentsComponent;
+    const filmComments = this._getCommentsCurrentFilm(dataFilm);
+
+    this._commentsComponent = new CommentsView(filmComments);
+
+    this._commentsComponent.setClickDeleteHandler(this._onClickDeleteComment);
+    replaceComponent(this._commentsComponent, prevCommentsComponent);
+    removeComponent(prevCommentsComponent);
   }
 
   _closePopup() {
@@ -86,24 +97,30 @@ export default class Popup {
     }
   }
 
-  _onWatchlistChange() {
-    const updatedFilm = { ...this._dataFilm };
-    updatedFilm.userDetails.watchlist = !this._dataFilm.userDetails.watchlist;
+  setDataFilm(updatedFilm) {
+    this._dataFilm = updatedFilm;
+  }
 
-    this._changeData(updatedFilm);
+  _onWatchlistChange() {
+    this._changeData(updateDataWatchlist(this._dataFilm));
   }
 
   _onWatchedChange() {
-    const updatedFilm = { ...this._dataFilm };
-    updatedFilm.userDetails.alreadyWatched = !this._dataFilm.userDetails.alreadyWatched;
-
-    this._changeData(updatedFilm);
+    this._changeData(updateDataWatched(this._dataFilm));
   }
 
   _onFavoriteChange() {
+    this._changeData(updateDataFavorite(this._dataFilm));
+  }
+
+  _onClickDeleteComment() {
+    const idCommentToDelete = this._commentsComponent.getIdCommentToDelete();
     const updatedFilm = { ...this._dataFilm };
-    updatedFilm.userDetails.favorite = !this._dataFilm.userDetails.favorite;
+
+    updatedFilm.comments = removeItemFromItems(this._dataFilm.comments, idCommentToDelete);
 
     this._changeData(updatedFilm);
+    this._changeComments(idCommentToDelete);
+    this._replaceComments(updatedFilm);
   }
 }

@@ -1,9 +1,9 @@
 
 export const createCommentRemover = (commentsComponent) => {
-  commentsComponent.setClickHandler(() => {
+  commentsComponent.setClickDeleteHandler(() => {
 
     // удаляем комментарий
-    commentsComponent.getEvt().target.closest('.film-details__comment').remove();
+    commentsComponent.getCommentToDelete().remove();
 
     // меняем значение счетчика
     commentsComponent.getElement()

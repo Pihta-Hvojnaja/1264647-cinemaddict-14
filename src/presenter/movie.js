@@ -1,5 +1,6 @@
 
 import { render, replaceComponent, removeComponent } from '../utils/render.js';
+import { updateDataWatchlist, updateDataWatched, updateDataFavorite } from '../utils/button-controls.js';
 
 import CardFilmView from '../view/card-film.js';
 
@@ -45,24 +46,15 @@ export default class Movie {
   }
 
   _onWatchlistClick() {
-    const updatedFilm = { ...this._dataFilm };
-    updatedFilm.userDetails.watchlist = !this._dataFilm.userDetails.watchlist;
-
-    this._changeData(updatedFilm);
+    this._changeData(updateDataWatchlist(this._dataFilm));
   }
 
   _onWatchedClick() {
-    const updatedFilm = { ...this._dataFilm };
-    updatedFilm.userDetails.alreadyWatched = !this._dataFilm.userDetails.alreadyWatched;
-
-    this._changeData(updatedFilm);
+    this._changeData(updateDataWatched(this._dataFilm));
   }
 
   _onFavoriteClick() {
-    const updatedFilm = { ...this._dataFilm };
-    updatedFilm.userDetails.favorite = !this._dataFilm.userDetails.favorite;
-
-    this._changeData(updatedFilm);
+    this._changeData(updateDataFavorite(this._dataFilm));
   }
 }
 
