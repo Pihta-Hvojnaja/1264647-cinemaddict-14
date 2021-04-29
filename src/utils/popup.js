@@ -6,7 +6,7 @@ const ONE_NAME = 1;
 /**
  * Функция, если жанров несколько, выводит слово «Genres», иначе «Genre»
  * @param {Array} genres - принимает массив с жанрами
- * @returns {string} - отдает строку со словом "Genre" или "Genres"
+ * @returns {string} - возвращает строку со словом "Genre" или "Genres"
  */
 export const defineNumberGenre = (genres) => genres.length === ONE_GENRE ? 'Genre' : 'Genres';
 
@@ -14,7 +14,7 @@ export const defineNumberGenre = (genres) => genres.length === ONE_GENRE ? 'Genr
 /**
  * Функция генерирует разметку с названиями жанров или жанра
  * @param {Array} genres - принимает массив с жанрами
- * @returns {string} - отдает разметку с жанрами
+ * @returns {string} - возвращает разметку с жанрами
  */
 export const getGenre = (genres) => {
   if (genres.length === ONE_GENRE) {
@@ -35,7 +35,7 @@ export const getGenre = (genres) => {
 /**
  * Функция переводим массив с именами в строку
  * @param {Array} names - массив имен
- * @returns {string} - имена в виде строки
+ * @returns {string} - возвращает имена в форме строки
  */
 export const getName = (names) => {
   return names.length > ONE_NAME ? names.join(', ') : names + '';

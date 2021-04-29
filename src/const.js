@@ -1,4 +1,7 @@
 
+/**
+ * @type {Object} - переменная хранит коллекцию типов сортировки данных
+ */
 export const SortType = {
   DEFAULT: 'default',
   DATE: 'sort-by-date',

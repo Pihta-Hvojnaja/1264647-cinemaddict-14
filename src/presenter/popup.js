@@ -23,9 +23,9 @@ export default class Popup {
   }
 
   init(dataFilm, dataComments, changeData, changeComments) {
-
     this._dataFilm = dataFilm;
     this._dataComments = dataComments.slice();
+
     this._changeData = changeData;
     this._changeComments = changeComments;
 
@@ -55,7 +55,6 @@ export default class Popup {
     return comments.map((idComment) => this._dataComments.find((dataComment) => dataComment.id === idComment));
   }
 
-  /** Отрисовывает попап*/
   _renderPopup() {
     this._popupContainer.classList.add('hide-overflow');
 
@@ -116,8 +115,8 @@ export default class Popup {
   }
 
   _onClickDeleteComment() {
-    const idCommentToDelete = this._commentsComponent.getIdCommentToDelete();
     const updatedFilm = { ...this._dataFilm };
+    const idCommentToDelete = this._commentsComponent.getIdCommentToDelete();
 
     updatedFilm.comments = removeItemFromItems(this._dataFilm.comments, idCommentToDelete);
 

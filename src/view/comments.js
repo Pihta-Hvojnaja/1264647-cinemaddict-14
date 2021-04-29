@@ -6,7 +6,7 @@ import AbstractView from './abstract.js';
 /**
  * Функция возвращает готовые комментарии
  * @param {Array} filmComments - массив комментариев выбранного фильма
- * @returns {string} - заполненный шаблон комментариев
+ * @returns {string} - возвращает заполненный шаблон комментариев
  */
 const createComments = (filmComments) => {
 
@@ -35,7 +35,7 @@ const createComments = (filmComments) => {
 /**
  * Функция возвращает список комментариев
  * @param {Array} filmComments - массив комментариев выбранного фильма
- * @returns {string} - заполненный шаблон секции film-details__comments
+ * @returns {string} - возвращает заполненный шаблон секции film-details__comments
  */
 const createListCommentsTemplate = (filmComments) => {
 

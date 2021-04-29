@@ -2,6 +2,7 @@
 import AbstractView from './abstract.js';
 import { SortType } from '../const.js';
 
+
 const createSortTemplate = () => {
   return `<ul class="sort">
             <li>
@@ -22,6 +23,7 @@ const createSortTemplate = () => {
           </ul>`;
 };
 
+
 export default class Sort extends AbstractView {
   constructor() {
     super();
@@ -38,11 +40,23 @@ export default class Sort extends AbstractView {
   }
 
   _sortTypeChangeHandler(evt) {
-    if (evt.target.tagName !== 'A') {
+    evt.preventDefault();
+    const currentBtnElement = evt.target;
+    const nameActiveClass = 'sort__button--active';
+    const allButtonElements = this.getElement().querySelectorAll('a');
+
+    if (currentBtnElement.tagName !== 'A') {
       return;
     }
 
-    evt.preventDefault();
-    this._callback.sortTypeChange(evt.target.dataset.sortType);
+    if (!currentBtnElement.classList.contains(nameActiveClass)) {
+      allButtonElements.forEach((button) => {
+        button.classList.remove(nameActiveClass);
+      });
+
+      currentBtnElement.classList.add(nameActiveClass);
+    }
+
+    this._callback.sortTypeChange(currentBtnElement.dataset.sortType);
   }
 }

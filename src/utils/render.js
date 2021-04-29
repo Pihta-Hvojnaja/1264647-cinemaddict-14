@@ -2,14 +2,21 @@
 import Abstract from './../view/abstract.js';
 
 
-/*  Для создания и отрисовки компонентов
-    ========================================================================== */
-
+/**
+ * @type {Object} - перечисление содержит позиции для отрисовки элементов
+ */
 export const RenderPosition = {
   AFTERBEGIN: 'afterbegin',
   BEFOREEND: 'beforeend',
 };
 
+
+/**
+ * Ф-ция отрисовки элемента
+ * @param {Object} container - родитель, в котором отрисовывается элемент
+ * @param {Object} child - что отрисовать
+ * @param {Object} place - место отрисовки в родителе
+ */
 export const render = (container, child, place = RenderPosition.BEFOREEND) => {
   if (container instanceof Abstract) {
     container = container.getElement();
@@ -29,20 +36,26 @@ export const render = (container, child, place = RenderPosition.BEFOREEND) => {
   }
 };
 
-// Принцип работы:
-// 1. создаёт пустой div-блок
-// 2. берёт HTML в виде строки и вкладывает в этот div-блок, превращая в DOM-элемент
-// 3. возвращает ребенка div-блока (шаблон ввиде DOM-элемента)
+
+/**
+ * Ф-ция создает DOM элемент на основе шаблона
+ * @param {string} template - шаблон разметки. HTML в template должен иметь общую обёртку,
+ * то есть быть чем-то вроде <nav><a>Link 1</a><a>Link 2</a></nav>,
+ * а не просто <a>Link 1</a><a>Link 2</a>
+ * @returns {Object} - возвращает готовый DOM элемент
+ */
 export const createElement = (template) => {
-  const newElement = document.createElement('div'); // 1
-  newElement.innerHTML = template; // 2
-  return newElement.firstChild; // 3
+  const newElement = document.createElement('div');
+  newElement.innerHTML = template;
+  return newElement.firstChild;
 };
-// Нюанс: HTML в строке должен иметь общую обёртку,
-// то есть быть чем-то вроде <nav><a>Link 1</a><a>Link 2</a></nav>,
-// а не просто <a>Link 1</a><a>Link 2</a>
 
 
+/**
+ * Ф-ция перерисовывает DOM-элемент
+ * @param {Object} newChild - новый компонент или элемент разметки
+ * @param {Object} oldChild - заменяемый компонент или элемент разметки
+ */
 export const replaceComponent = (newChild, oldChild) => {
   if (oldChild instanceof Abstract) {
     oldChild = oldChild.getElement();
@@ -62,6 +75,10 @@ export const replaceComponent = (newChild, oldChild) => {
 };
 
 
+/**
+ * Ф-ция удаления компонента
+ * @param {Object} component - удаляемый компонент
+ */
 export const removeComponent = (component) => {
   if (!(component instanceof Abstract)) {
     throw new Error('Can remove only components');

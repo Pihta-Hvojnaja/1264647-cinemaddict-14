@@ -1,5 +1,5 @@
 
-// Объект собирает данные для фильтра
+/** Объект собирает данные для фильтра */
 const taskToFilterFilms = {
   watchlist: (dataFilms) => dataFilms
     .filter((dataFilm) => dataFilm.userDetails.watchlist)
@@ -14,7 +14,12 @@ const taskToFilterFilms = {
     .length,
 };
 
-// Функция реобразует данные для фильтра
+
+/**
+ * Функция преобразует данные для фильтра
+ * @param {Array} dataFilms - массив данных
+ * @returns {Object} - возвращает преобразованный объект данных
+ */
 export const generateFilter = (dataFilms) => {
   return Object.entries(taskToFilterFilms).map(([filterName, countTasks]) => {
     return {

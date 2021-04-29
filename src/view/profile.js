@@ -2,9 +2,11 @@
 import AbstractView from './abstract.js';
 
 
-/*  Функция возвращает поле рейтинга в профиле
-   ========================================================================== */
-
+/**
+ * Ф-ция возвращает поле рейтинга в профиле
+ * @param {number} count - количество просмотренных фильмов
+ * @returns {string} - возвращает разметку рейтинга в профиле
+ */
 const createFilterItemTemplate = (count) => {
   let status;
 
@@ -22,16 +24,18 @@ const createFilterItemTemplate = (count) => {
 };
 
 
-/*  Функция возвращает шаблон профиля
-   ========================================================================== */
-
+/**
+ * Ф-ция создаеш шаблон профиля
+ * @param {Object} filters - объект данных фильтра
+ * @returns {string} - возвращает заполненную разметку шаблона профиля
+ */
 const createProfileTemplate = (filters) => {
   const [ , history] = filters;
 
   return history.count === 0 ? ' ' : `<section class="header__profile profile">
-                                ${createFilterItemTemplate(history.count)}
-                                <img class="profile__avatar" src="images/bitmap@2x.png" alt="Avatar" width="35" height="35">
-                              </section>`;
+                                        ${createFilterItemTemplate(history.count)}
+                                        <img class="profile__avatar" src="images/bitmap@2x.png" alt="Avatar" width="35" height="35">
+                                      </section>`;
 };
 
 

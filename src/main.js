@@ -12,7 +12,7 @@ import FooterStatisticsView from './view/footer-statistics.js';
 import MovieListPresenter from './presenter/movie-list.js';
 
 
-/*  Общие переменные
+/* VARIABLE
    ========================================================================== */
 
 const FILM_COUNT = 20;
@@ -23,7 +23,7 @@ const mainSiteElement = bodyElement.querySelector('.main');
 const footerStatisticsElement = bodyElement.querySelector('.footer__statistics');
 
 
-/*  Генерируем данные
+/* DATA
    ========================================================================== */
 
 const dataFilms = new Array(FILM_COUNT).fill().map(generateDataFilm);
@@ -31,26 +31,26 @@ const dataComments = generateDataComments();
 const filters = generateFilter(dataFilms);
 
 
-/*  Отрисовываем профиль
+/* PROFILE
    ========================================================================== */
 
 render(headerSiteElement, new ProfileView(filters));
 
 
-/*  Отрисовываем меню
+/* FILTER
    ========================================================================== */
 
 render(mainSiteElement, new SiteFilterView(filters));
 
 
-/*  Отрисовываем фильмы
+/* BOARD FILMS
    ========================================================================== */
 
 const movieListPresenter = new MovieListPresenter(mainSiteElement, bodyElement);
 movieListPresenter.init(dataFilms, dataComments);
 
 
-/*  Отрисовываем статистику в footer
+/* FOOTER
    ========================================================================== */
 
 render(footerStatisticsElement, new FooterStatisticsView(dataFilms));
