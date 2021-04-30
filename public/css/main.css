@@ -530,6 +530,10 @@ button {
   padding-bottom: 0;
 }
 
+.films-list--extra-none {
+  display: none;
+}
+
 .films-list--extra:last-of-type {
   position: relative;
 }
@@ -543,6 +547,10 @@ button {
   position: absolute;
   top: 20px;
   width: 0;
+}
+
+.films-list--no-border::before {
+  border-left: none !important;
 }
 
 .films-list--extra .films-list__container {

@@ -1,14 +1,26 @@
 
-/*  Функция поля жанры/жанр
-   ========================================================================== */
+const ONE_GENRE = 1;
+const ONE_NAME = 1;
 
-export const defineNumberGenre = (genres) => genres.length === 1 ? 'Genre' : 'Genres';
 
+/**
+ * Функция, если жанров несколько, выводит слово «Genres», иначе «Genre»
+ * @param {Array} genres - принимает массив с жанрами
+ * @returns {string} - возвращает строку со словом "Genre" или "Genres"
+ */
+export const defineNumberGenre = (genres) => genres.length === ONE_GENRE ? 'Genre' : 'Genres';
+
+
+/**
+ * Функция генерирует разметку с названиями жанров или жанра
+ * @param {Array} genres - принимает массив с жанрами
+ * @returns {string} - возвращает разметку с жанрами
+ */
 export const getGenre = (genres) => {
-  if (genres.length === 1) { // если жанр один
+  if (genres.length === ONE_GENRE) {
     return `<span class="film-details__genre">${genres}</span>`;
 
-  } else { // если жанров много
+  } else {
 
     const glueTags = (accumulator, currentValue) => {
       accumulator += `<span class="film-details__genre">${currentValue}</span>`;
@@ -20,20 +32,11 @@ export const getGenre = (genres) => {
 };
 
 
-/*  Переводим массив с именами в строку
-   ========================================================================== */
-
+/**
+ * Функция переводим массив с именами в строку
+ * @param {Array} names - массив имен
+ * @returns {string} - возвращает имена в форме строки
+ */
 export const getName = (names) => {
-  return names.length > 1 ? names.join(', ') : names + '';
-};
-
-
-/*  Если кликнули по нужному элементу карточки фильма, возвращает true
-   ========================================================================== */
-
-export const isClickCardFilm = (evt) => {
-  const currentElement = evt.target.className;
-  return currentElement === 'film-card__poster' ||
-          currentElement === 'film-card__title' ||
-            currentElement === 'film-card__comments';
+  return names.length > ONE_NAME ? names.join(', ') : names + '';
 };

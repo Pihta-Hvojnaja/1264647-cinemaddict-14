@@ -1,4 +1,6 @@
 
+import { nanoid } from 'nanoid';
+
 import {
   FILM_NAMES,
   POSTER_ADDRESSES,
@@ -17,17 +19,11 @@ import {
 } from './util-data.js';
 
 
-/*  Функция генерации данных для карточек и попапа
-   ========================================================================== */
-
-let counter = -1;
-
 export const generateDataFilm = () => {
   const nameFilm = getRandomElement(FILM_NAMES);
-  counter += 1;
 
   return {
-    id: counter,
+    id: nanoid(),
     comments: getArrayRandomLength(COMMENTS),
 
     filmInfo: {

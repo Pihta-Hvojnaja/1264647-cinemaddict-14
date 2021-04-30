@@ -1,16 +1,7 @@
 
-import {
-  DIRECTORS,
-  EMOJIS
-} from './const-data.js';
+import { DIRECTORS,EMOJIS } from './const-data.js';
+import { getRandomElement } from './util-data.js';
 
-import {
-  getRandomElement
-} from './util-data.js';
-
-
-/*  Функция генерации данных для комментариев
-   ========================================================================== */
 
 export const generateDataComments = () => {
 
