@@ -1,6 +1,9 @@
 
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import AbstractView from './abstract.js';
+
+dayjs.extend(relativeTime);
 
 
 /**
@@ -21,7 +24,7 @@ const createComments = (filmComments) => {
                         <p class="film-details__comment-text">${comment}</p>
                         <p class="film-details__comment-info">
                           <span class="film-details__comment-author">${author}</span>
-                          <span class="film-details__comment-day">${dayjs(date).format('YYYY/MM/DD hh:mm')}</span>
+                          <span class="film-details__comment-day">${dayjs(date).fromNow()}</span>
                           <button class="film-details__comment-delete" type="button">Delete</button>
                         </p>
                       </div>

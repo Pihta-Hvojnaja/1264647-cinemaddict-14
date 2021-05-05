@@ -12,15 +12,15 @@ import SectionFilmsView from '../view/section-films.js';
 
 import ButtonShowMoreView from '../view/button-show-more.js';
 
-import MoviePresenter from './movie.js';
-import PopupPresenter from './popup.js';
+import MoviePresenter from './movie-presenter.js';
+import PopupPresenter from './popup-presenter.js';
 
 
 const FILM_COUNT_PER_STEP = 5;
 const FILM_COUNT_LIST_EXTRA = 2;
 
 
-export default class MovieList {
+export default class MovieListPresenter {
 
   constructor(listFilmsContainer, popupContainer) {
     this._listFilmsContainer = listFilmsContainer;
@@ -31,18 +31,11 @@ export default class MovieList {
 
     this._sortComponent = new SortView();
     this._noFilmsComponent = new NoFilmsView();
-    this._sectionFilmsComponent = new SectionFilmsView();
+    this._sectionFilmsComponent = null;
     this._buttonShowMoreComponent = new ButtonShowMoreView();
-
-    this._moviePresenters = [];
     this._popupPresenter = new PopupPresenter(this._popupContainer);
 
-    this._allFilmsElement = this._sectionFilmsComponent.getElement().querySelector('#all-films');
-    this._filmsContainerElement = this._allFilmsElement.querySelector('.films-list__container');
-    this._topRatedElement = this._sectionFilmsComponent.getElement().querySelector('#top-rated');
-    this._topRatedContainerElement = this._topRatedElement.querySelector('.films-list__container');
-    this._mostCommentedElement = this._sectionFilmsComponent.getElement().querySelector('#most-commented');
-    this._mostCommentedContainerElement = this._mostCommentedElement.querySelector('.films-list__container');
+    this._moviePresenters = [];
 
     this._onSortTypeChange = this._onSortTypeChange.bind(this);
     this._onCardFilmClick = this._onCardFilmClick.bind(this);
@@ -56,6 +49,9 @@ export default class MovieList {
     this._sourceDataFilms = dataFilms.slice();
     this._dataFilms = dataFilms.slice();
     this._dataComments = dataComments.slice();
+
+    this._dataTopRatedFilms = null;
+    this._dataMostCommentedFilms = null;
 
     this._renderSort();
     this._renderBoardFilms();
@@ -87,88 +83,79 @@ export default class MovieList {
   /** Отрисовывает основной список фильмов */
   _renderAllFilms(dataFilms, from, to) {
     dataFilms.slice(from, to)
-      .forEach((dataFilm) => this._renderFilm(this._filmsContainerElement, dataFilm));
+      .forEach((dataFilm) => this._renderFilm(this._sectionFilmsComponent.getFilmsContainerElement(), dataFilm));
   }
 
   /** Отрисовывает кнопку Show more */
   _renderButtomShowMore() {
     if (this._dataFilms.length > FILM_COUNT_PER_STEP) {
-      render(this._allFilmsElement, this._buttonShowMoreComponent);
+      render(this._sectionFilmsComponent.getAllFilmsElement(), this._buttonShowMoreComponent);
       this._buttonShowMoreComponent.setClickHandler(this._onButtomShowMoreClick);
     }
   }
 
-  /**
-   * Функция проверки рейтинга фильмов: если все фильмы имеют рейтинг "0", скрывает блок
-   * @param {Object} firstElement - первый элемент массива: объект с описанием фильма
-   * @returns {boolean} - если все фильмы имеют рейтинг "0", выйдет из функции
-   */
-  _isTopRatedFilms(firstElement) {
-    if (firstElement.filmInfo.totalRating === 0) {
-      this._topRatedElement.classList.add('films-list--extra-none');
-      this._mostCommentedElement.classList.add('films-list--no-border');
+  /** Очищает список фильмов заданной секции */
+  _clearSectionFilms(idSectionFilm) {
+    let newMoviePresenters = [];
+    this._moviePresenters.forEach(
+      (presenter) => {
+        if (presenter.getIdParentSection() === idSectionFilm) {
+          presenter.destroy();
+          return;
+        }
+
+        newMoviePresenters.push(presenter);
+      });
+
+    this._moviePresenters = newMoviePresenters.slice();
+    newMoviePresenters = null;
+  }
+
+  /** Отрисовывает карточки в секции Top Reted */
+  _renderTopRatedFilms() {
+    this._dataTopRatedFilms = this._sortFilms(this._dataFilms, SortType.RATING);
+    const ratingFirstElement = this._dataTopRatedFilms[0].filmInfo.totalRating;
+
+    if (ratingFirstElement === 0) {
+      this._sectionFilmsComponent.isTopRatedFilms();
       return;
     }
 
-    this._topRatedElement.classList.remove('films-list--extra-none');
-    this._mostCommentedElement.classList.remove('films-list--no-border');
-    return true;
+    this._dataTopRatedFilms.slice(0, FILM_COUNT_LIST_EXTRA)
+      .forEach((dataFilm) => this._renderFilm(this._sectionFilmsComponent.getTopRatedContainerElement(), dataFilm));
   }
 
-  /**
-   * Отрисовывает карточки в секции Top Reted
-   * @param {Array} dataTopRatedFilms - отсортированные данные фильмов (по рейтингу -> от большего)
-   */
-  _renderTopRatedFilms(dataTopRatedFilms) {
-    const firstElement = dataTopRatedFilms[0];
+  /** Отрисовывает карточки в секции Most Commented */
+  _renderMostCommentedFilms() {
 
-    if (this._isTopRatedFilms(firstElement)) {
-      dataTopRatedFilms.slice(0, FILM_COUNT_LIST_EXTRA)
-        .forEach((dataFilm) => this._renderFilm(this._topRatedContainerElement, dataFilm));
+    if (this._dataMostCommentedFilms) {
+      this._clearSectionFilms(this._sectionFilmsComponent.getMostCommentedElement().id);
     }
-  }
 
-  /**
-   * Функция проверки кол-ва комментариев у фильмов: если все фильмы имеют "0" комментариев, скрывает блок
-   * @param {Object} firstElement - первый элемент массива: объект с описанием фильма
-   * @returns {boolean} - если все фильмы имеют "0" комментариев, выйдет из функции
-   */
-  _isMostCommentedFilms(firstElement) {
-    if (firstElement.comments.length === 0) {
-      this._mostCommentedElement.classList.add('films-list--extra-none');
+
+    this._dataMostCommentedFilms = this._sortFilms(this._dataFilms, SortType.COUNT_COMMENTS);
+    const countCommentsFirstElement = this._dataMostCommentedFilms[0].comments.length;
+
+    this._sectionFilmsComponent.isMostCommentedFilms(countCommentsFirstElement);
+
+    if (countCommentsFirstElement === 0) {
       return;
     }
 
-    this._mostCommentedElement.classList.remove('films-list--extra-none');
-    return true;
-  }
-
-  /**
-   * Отрисовывает карточки в секции Most Commented
-   * @param {Array} dataMostCommentedFilms - отсортированные данные фильмов (по кол-ву комментариев -> от большего)
-   */
-  _renderMostCommentedFilms(dataMostCommentedFilms) {
-    const firstElement = dataMostCommentedFilms[0];
-
-    if (this._isMostCommentedFilms(firstElement)) {
-      dataMostCommentedFilms.slice(0, FILM_COUNT_LIST_EXTRA)
-        .forEach((dataFilm) => this._renderFilm(this._mostCommentedContainerElement, dataFilm));
-    }
+    this._dataMostCommentedFilms.slice(0, FILM_COUNT_LIST_EXTRA)
+      .forEach((dataFilm) => this._renderFilm(this._sectionFilmsComponent.getMostCommentedContainerElement(), dataFilm));
   }
 
   /** Отрисовывает все списки фильмов */
   _renderListFilms(sortType) {
-    this._dataFilms = this._sortFilms(this._dataFilms, sortType);
 
-    const dataTopRatedFilms = (sortType === sortType.RATING) ?
-      this._dataFilms : this._sortFilms(this._dataFilms, SortType.RATING);
-
-    const dataMostCommentedFilms = this._sortFilms(this._dataFilms, SortType.COUNT_COMMENTS);
+    this._dataFilms = (sortType === sortType.RATING) ?
+      this._dataTopRatedFilms : this._sortFilms(this._dataFilms, sortType);
 
     this._renderAllFilms(this._dataFilms, 0, FILM_COUNT_PER_STEP);
     this._renderButtomShowMore();
-    this._renderTopRatedFilms(dataTopRatedFilms);
-    this._renderMostCommentedFilms(dataMostCommentedFilms);
+    this._renderTopRatedFilms();
+    this._renderMostCommentedFilms(this._dataMostCommentedFilms);
   }
 
   /** Очищает все списки фильмов */
@@ -187,6 +174,8 @@ export default class MovieList {
       this._renderNoFilms();
       return;
     }
+
+    this._sectionFilmsComponent = new SectionFilmsView();
 
     this._renderSectionFilms();
     this._renderListFilms(SortType.DEFAULT);
@@ -267,5 +256,7 @@ export default class MovieList {
   /** Обработчик изменений данных комментариев */
   _onCommentsChange(idComment) {
     this._dataComments = removeItemFromItems(this._dataComments, idComment);
+    this._popupPresenter.replaceComments();
+    this._renderMostCommentedFilms();
   }
 }

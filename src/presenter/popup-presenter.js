@@ -4,9 +4,10 @@ import { updateDataWatchlist, updateDataWatched, updateDataFavorite } from '../u
 
 import PopupView from '../view/popup.js';
 import CommentsView from '../view/comments.js';
+import NewCommentView from '../view/new-comment.js';
 
 
-export default class Popup {
+export default class PopupPresenter {
 
   constructor(popupContainer) {
     this._popupContainer = popupContainer;
@@ -36,6 +37,7 @@ export default class Popup {
     }
 
     this._commentsComponent = new CommentsView(filmComments);
+    this._newCommentComponent = new NewCommentView();
     this._popupComponent = new PopupView(this._dataFilm);
 
     this._renderPopup();
@@ -43,6 +45,18 @@ export default class Popup {
 
   setDataFilm(updatedFilm) {
     this._dataFilm = updatedFilm;
+  }
+
+  replaceComments() {
+    const prevCommentsComponent = this._commentsComponent;
+    const filmComments = this._getCommentsCurrentFilm(this._dataFilm);
+
+    this._commentsComponent = new CommentsView(filmComments);
+
+    this._commentsComponent.setClickDeleteHandler(this._onClickDeleteComment);
+
+    replaceComponent(this._commentsComponent, prevCommentsComponent);
+    removeComponent(prevCommentsComponent);
   }
 
   /**
@@ -71,25 +85,16 @@ export default class Popup {
       this._commentsComponent,
       RenderPosition.AFTERBEGIN,
     );
+    render(this._popupComponent.getElement().querySelector('.film-details__comments-wrap'),
+      this._newCommentComponent);
   }
 
   _closePopup() {
     this._popupContainer.classList.remove('hide-overflow');
+    removeComponent(this._newCommentComponent);
     removeComponent(this._commentsComponent);
     removeComponent(this._popupComponent);
     document.removeEventListener('keydown', this._onEscKeyDown);
-  }
-
-  _replaceComments(dataFilm) {
-    const prevCommentsComponent = this._commentsComponent;
-    const filmComments = this._getCommentsCurrentFilm(dataFilm);
-
-    this._commentsComponent = new CommentsView(filmComments);
-
-    this._commentsComponent.setClickDeleteHandler(this._onClickDeleteComment);
-
-    replaceComponent(this._commentsComponent, prevCommentsComponent);
-    removeComponent(prevCommentsComponent);
   }
 
   _onCloseButtonClick() {
@@ -122,6 +127,5 @@ export default class Popup {
 
     this._changeData(updatedFilm);
     this._changeComments(idCommentToDelete);
-    this._replaceComments(updatedFilm);
   }
 }
