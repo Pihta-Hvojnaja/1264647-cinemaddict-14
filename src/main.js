@@ -9,7 +9,7 @@ import ProfileView from './view/profile.js';
 import SiteFilterView from './view/site-filter.js';
 import FooterStatisticsView from './view/footer-statistics.js';
 
-import MovieListPresenter from './presenter/movie-list.js';
+import MovieListPresenter from './presenter/movie-list-presenter.js';
 
 
 /* VARIABLE

@@ -28,10 +28,41 @@ export default class SectionFilms extends AbstractView {
     super();
     this._idCardFilm = null;
     this._clickHandler = this._clickHandler.bind(this);
+
+    this._allFilmsElement = this.getElement().querySelector('#all-films');
+    this._filmsContainerElement = this._allFilmsElement.querySelector('.films-list__container');
+    this._topRatedElement = this.getElement().querySelector('#top-rated');
+    this._topRatedContainerElement = this._topRatedElement.querySelector('.films-list__container');
+    this._mostCommentedElement = this.getElement().querySelector('#most-commented');
+    this._mostCommentedContainerElement = this._mostCommentedElement.querySelector('.films-list__container');
   }
 
   getTemplate() {
     return createSectionFilmsTemplate();
+  }
+
+  getAllFilmsElement () {
+    return this._allFilmsElement;
+  }
+
+  getFilmsContainerElement() {
+    return this._filmsContainerElement;
+  }
+
+  getTopRatedElement() {
+    return this._topRatedElement;
+  }
+
+  getTopRatedContainerElement() {
+    return this._topRatedContainerElement;
+  }
+
+  getMostCommentedElement() {
+    return this._mostCommentedElement;
+  }
+
+  getMostCommentedContainerElement() {
+    return this._mostCommentedContainerElement;
   }
 
   getIdCardFilm() {
@@ -42,6 +73,23 @@ export default class SectionFilms extends AbstractView {
     this._callback.click = callback;
 
     this.getElement().addEventListener('click', this._clickHandler);
+  }
+
+  isTopRatedFilms() {
+    this._topRatedElement.classList.add('films-list--extra-none');
+    this._mostCommentedElement.classList.add('films-list--no-border');
+  }
+
+  isMostCommentedFilms(isComments) {
+    if (!isComments) {
+      this._mostCommentedElement.classList.add('films-list--extra-none');
+      return;
+    }
+    this._mostCommentedElement.classList.remove('films-list--extra-none');
+  }
+
+  clearMostCommentedContainerElement() {
+    this._mostCommentedContainerElement.innerHTML = '';
   }
 
   _isClickCardFilm(evt) {

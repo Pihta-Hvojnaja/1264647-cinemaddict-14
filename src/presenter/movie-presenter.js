@@ -5,9 +5,11 @@ import { updateDataWatchlist, updateDataWatched, updateDataFavorite } from '../u
 import CardFilmView from '../view/card-film.js';
 
 
-export default class Movie {
+export default class MoviePresenter {
   constructor(filmContainer, changeData) {
     this._filmContainer = filmContainer;
+    this._idParentSection = this._filmContainer.parentElement.id;
+
     this._changeData = changeData;
 
     this._cardFilmComponent = null;
@@ -39,6 +41,10 @@ export default class Movie {
 
   getId() {
     return this._dataFilm.id;
+  }
+
+  getIdParentSection() {
+    return this._idParentSection;
   }
 
   destroy() {
