@@ -4,6 +4,8 @@ import { updateDataWatchlist, updateDataWatched, updateDataFavorite } from '../u
 
 import CardFilmView from '../view/card-film.js';
 
+import {UserAction, UpdateType} from '../const.js';
+
 
 export default class MoviePresenter {
   constructor(filmContainer, changeData) {
@@ -52,15 +54,27 @@ export default class MoviePresenter {
   }
 
   _onWatchlistClick() {
-    this._changeData(updateDataWatchlist(this._dataFilm));
+    this._changeData(
+      UserAction.UPDATE_FILM,
+      UpdateType.PATCH,
+      updateDataWatchlist(this._dataFilm),
+    );
   }
 
   _onWatchedClick() {
-    this._changeData(updateDataWatched(this._dataFilm));
+    this._changeData(
+      UserAction.UPDATE_FILM,
+      UpdateType.PATCH,
+      updateDataWatched(this._dataFilm),
+    );
   }
 
   _onFavoriteClick() {
-    this._changeData(updateDataFavorite(this._dataFilm));
+    this._changeData(
+      UserAction.UPDATE_FILM,
+      UpdateType.PATCH,
+      updateDataFavorite(this._dataFilm),
+    );
   }
 }
 

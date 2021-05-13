@@ -1,10 +1,12 @@
 import { render, removeComponent, replaceComponent, RenderPosition } from '../utils/render.js';
-import { removeItemFromItems } from '../utils/update-items.js';
+import { removeItemFromItems } from '../utils/remove-item.js';
 import { updateDataWatchlist, updateDataWatched, updateDataFavorite } from '../utils/button-controls.js';
 
 import PopupView from '../view/popup.js';
 import CommentsView from '../view/comments.js';
 import NewCommentView from '../view/new-comment.js';
+
+import {UserAction, UpdateType} from '../const.js';
 
 
 export default class PopupPresenter {
@@ -108,15 +110,27 @@ export default class PopupPresenter {
   }
 
   _onWatchlistChange() {
-    this._changeData(updateDataWatchlist(this._dataFilm));
+    this._changeData(
+      UserAction.UPDATE_FILM,
+      UpdateType.PATCH,
+      updateDataWatchlist(this._dataFilm),
+    );
   }
 
   _onWatchedChange() {
-    this._changeData(updateDataWatched(this._dataFilm));
+    this._changeData(
+      UserAction.UPDATE_FILM,
+      UpdateType.PATCH,
+      updateDataWatched(this._dataFilm),
+    );
   }
 
   _onFavoriteChange() {
-    this._changeData(updateDataFavorite(this._dataFilm));
+    this._changeData(
+      UserAction.UPDATE_FILM,
+      UpdateType.PATCH,
+      updateDataFavorite(this._dataFilm),
+    );
   }
 
   _onClickDeleteComment() {
@@ -125,7 +139,19 @@ export default class PopupPresenter {
 
     updatedFilm.comments = removeItemFromItems(this._dataFilm.comments, idCommentToDelete);
 
-    this._changeData(updatedFilm);
+    this._changeData(
+      UserAction.UPDATE_FILM,
+      UpdateType.PATCH,
+      updatedFilm,
+    );
+
+    this._changeData(
+      UserAction.DELETE_COMMENT,
+      UpdateType.PATCH,
+      idCommentToDelete,
+    );
+
+
     this._changeComments(idCommentToDelete);
   }
 }

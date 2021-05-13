@@ -10,6 +10,8 @@ import SiteFilterView from './view/site-filter.js';
 import FooterStatisticsView from './view/footer-statistics.js';
 
 import MovieListPresenter from './presenter/movie-list-presenter.js';
+import MoviesModel from './model/movies-model.js';
+import CommentsModel from './model/comments-model.js';
 
 
 /* VARIABLE
@@ -27,8 +29,14 @@ const footerStatisticsElement = bodyElement.querySelector('.footer__statistics')
    ========================================================================== */
 
 const dataFilms = new Array(FILM_COUNT).fill().map(generateDataFilm);
+const moviesModel = new MoviesModel();
+moviesModel.setDataFilms(dataFilms);
+
 const dataComments = generateDataComments();
-const filters = generateFilter(dataFilms);
+const commentsModel = new CommentsModel();
+commentsModel.setDataComments(dataComments);
+
+const filters = generateFilter(moviesModel.getDataFilms());
 
 
 /* PROFILE
@@ -46,11 +54,11 @@ render(mainSiteElement, new SiteFilterView(filters));
 /* BOARD FILMS
    ========================================================================== */
 
-const movieListPresenter = new MovieListPresenter(mainSiteElement, bodyElement);
+const movieListPresenter = new MovieListPresenter(mainSiteElement, bodyElement, moviesModel, commentsModel);
 movieListPresenter.init(dataFilms, dataComments);
 
 
 /* FOOTER
    ========================================================================== */
 
-render(footerStatisticsElement, new FooterStatisticsView(dataFilms));
+render(footerStatisticsElement, new FooterStatisticsView(moviesModel.getDataFilms()));
