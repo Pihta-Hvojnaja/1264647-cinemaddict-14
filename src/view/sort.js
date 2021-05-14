@@ -3,20 +3,20 @@ import AbstractView from './abstract.js';
 import { SortType } from '../const.js';
 
 
-const createSortTemplate = () => {
+const createSortTemplate = (currentSortType) => {
   return `<ul class="sort">
             <li>
-              <a data-sort-type="${SortType.DEFAULT}" href="#" class="sort__button sort__button--active">
+              <a class="sort__button${currentSortType === SortType.DEFAULT ? ' sort__button--active' : ''}" data-sort-type="${SortType.DEFAULT}" href="#">
                 Sort by default
               </a>
             </li>
             <li>
-              <a data-sort-type="${SortType.DATE}" href="#" class="sort__button">
+              <a class="sort__button${currentSortType === SortType.DATE ? ' sort__button--active' : ''}" data-sort-type="${SortType.DATE}" href="#">
                 Sort by date
               </a>
             </li>
             <li>
-              <a data-sort-type="${SortType.RATING}" href="#" class="sort__button">
+              <a class="sort__button${currentSortType === SortType.RATING ? ' sort__button--active' : ''}" data-sort-type="${SortType.RATING}" href="#">
                 Sort by rating
               </a>
             </li>
@@ -25,13 +25,14 @@ const createSortTemplate = () => {
 
 
 export default class Sort extends AbstractView {
-  constructor() {
+  constructor(currentSortType) {
     super();
+    this._currentSortType = currentSortType;
     this._sortTypeChangeHandler = this._sortTypeChangeHandler.bind(this);
   }
 
   getTemplate() {
-    return createSortTemplate();
+    return createSortTemplate(this._currentSortType);
   }
 
   setSortTypeChangeHandler(callback) {
@@ -41,22 +42,6 @@ export default class Sort extends AbstractView {
 
   _sortTypeChangeHandler(evt) {
     evt.preventDefault();
-    const currentBtnElement = evt.target;
-    const nameActiveClass = 'sort__button--active';
-    const allButtonElements = this.getElement().querySelectorAll('a');
-
-    if (currentBtnElement.tagName !== 'A') {
-      return;
-    }
-
-    if (!currentBtnElement.classList.contains(nameActiveClass)) {
-      allButtonElements.forEach((button) => {
-        button.classList.remove(nameActiveClass);
-      });
-
-      currentBtnElement.classList.add(nameActiveClass);
-    }
-
-    this._callback.sortTypeChange(currentBtnElement.dataset.sortType);
+    this._callback.sortTypeChange(evt.target.dataset.sortType);
   }
 }

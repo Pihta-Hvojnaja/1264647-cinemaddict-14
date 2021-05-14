@@ -55,7 +55,7 @@ render(mainSiteElement, new SiteFilterView(filters));
    ========================================================================== */
 
 const movieListPresenter = new MovieListPresenter(mainSiteElement, bodyElement, moviesModel, commentsModel);
-movieListPresenter.init(dataFilms, dataComments);
+movieListPresenter.init();
 
 
 /* FOOTER

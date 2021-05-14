@@ -16,6 +16,7 @@ export default class PopupPresenter {
 
     this._popupComponent = null;
     this._commentsComponent = null;
+    this._newCommentComponent = null;
 
     this._onCloseButtonClick = this._onCloseButtonClick.bind(this);
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
@@ -135,6 +136,7 @@ export default class PopupPresenter {
 
   _onClickDeleteComment() {
     const updatedFilm = { ...this._dataFilm };
+
     const idCommentToDelete = this._commentsComponent.getIdCommentToDelete();
 
     updatedFilm.comments = removeItemFromItems(this._dataFilm.comments, idCommentToDelete);
@@ -147,11 +149,8 @@ export default class PopupPresenter {
 
     this._changeData(
       UserAction.DELETE_COMMENT,
-      UpdateType.PATCH,
+      UpdateType.MAJOR,
       idCommentToDelete,
     );
-
-
-    this._changeComments(idCommentToDelete);
   }
 }

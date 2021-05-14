@@ -17,8 +17,8 @@ export default class CommentsModel extends Observer {
     this._dataComments = dataComments.slice();
   }
 
-  updateDataComments(idComment) {
+  updateDataComments(updateType, idComment) {
     this._dataComments = removeItemFromItems(this._dataComments, idComment);
-    this._notify(updateType, updateDataFilm)
+    this._notify(updateType);
   }
 }
