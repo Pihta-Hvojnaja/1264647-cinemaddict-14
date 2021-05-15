@@ -1,4 +1,5 @@
 
+import { filter } from '../utils/filter.js';
 import { render, removeComponent } from '../utils/render.js';
 import { sortDate, sortTopRated, sortMostCommented } from '../utils/sort-data.js';
 
@@ -21,9 +22,10 @@ const FILM_COUNT_LIST_EXTRA = 2;
 
 export default class MovieListPresenter {
 
-  constructor(listFilmsContainer, popupContainer, moviesModel, commentsModel) {
+  constructor(listFilmsContainer, popupContainer, moviesModel, commentsModel, filterModel) {
     this._moviesModel = moviesModel;
     this._commentsModel = commentsModel;
+    this._filterModel = filterModel;
 
     this._listFilmsContainer = listFilmsContainer;
     this._popupContainer = popupContainer;
@@ -48,6 +50,7 @@ export default class MovieListPresenter {
     this._onCommentsModelEvent = this._onCommentsModelEvent.bind(this);
 
     this._moviesModel.addObserver(this._onMoviesModelEvent);
+    this._filterModel.addObserver(this._onMoviesModelEvent);
     this._commentsModel.addObserver(this._onCommentsModelEvent);
   }
 
@@ -59,17 +62,19 @@ export default class MovieListPresenter {
   }
 
   _getDataFilms(sortType = this._currentSortType) {
-    const copyDataFilms = this._moviesModel.getDataFilms().slice();
+    this._filterType = this._filterModel.getFilter();
+    const dataFilms = this._moviesModel.getDataFilms();
+    const filtredDataFilms = filter[this._filterType](dataFilms);
 
     switch (sortType) {
       case SortType.DATE:
-        return sortDate(copyDataFilms);
+        return sortDate(filtredDataFilms);
       case SortType.RATING:
-        return sortTopRated(copyDataFilms);
+        return sortTopRated(filtredDataFilms);
       case SortType.COUNT_COMMENTS:
-        return sortMostCommented(copyDataFilms);
+        return sortMostCommented(filtredDataFilms);
       case SortType.DEFAULT:
-        return this._moviesModel.getDataFilms();
+        return filtredDataFilms;
     }
   }
 
@@ -100,7 +105,7 @@ export default class MovieListPresenter {
 
   /** Отрисовывает карточку фильма */
   _renderFilm(container, dataFilm) {
-    const moviePresenter = new MoviePresenter(container, this._onViewAction);
+    const moviePresenter = new MoviePresenter(container, this._onViewAction, this._filterType);
     moviePresenter.init(dataFilm);
     this._moviePresenters.push(moviePresenter);
   }
@@ -143,7 +148,6 @@ export default class MovieListPresenter {
 
   /** Отрисовывает карточки в секции Top Reted */
   _renderTopRatedFilms() {
-    this._dataTopRatedFilms = this._getDataFilms(SortType.RATING);
     const ratingFirstElement = this._dataTopRatedFilms[0].filmInfo.totalRating;
 
     if (ratingFirstElement === 0) {
@@ -160,9 +164,9 @@ export default class MovieListPresenter {
 
     if (this._dataMostCommentedFilms) {
       this._clearSectionFilms(this._sectionFilmsComponent.getMostCommentedElement().id);
+      this._dataMostCommentedFilms = this._getDataFilms(SortType.COUNT_COMMENTS);
     }
 
-    this._dataMostCommentedFilms = this._getDataFilms(SortType.COUNT_COMMENTS);
     const countCommentsFirstElement = this._dataMostCommentedFilms[0].comments.length;
 
     this._sectionFilmsComponent.isMostCommentedFilms(countCommentsFirstElement);
@@ -184,6 +188,9 @@ export default class MovieListPresenter {
       return;
     }
 
+    this._dataTopRatedFilms = this._getDataFilms(SortType.RATING);
+    this._dataMostCommentedFilms = this._getDataFilms(SortType.COUNT_COMMENTS);
+
     const dataFilms = (this._currentSortType === SortType.RATING) ?
       this._dataTopRatedFilms : this._getDataFilms(this._currentSortType);
 
@@ -193,7 +200,7 @@ export default class MovieListPresenter {
     this._renderAllFilms(dataFilms, 0, this._renderedFilmCount);
     this._renderButtomShowMore();
     this._renderTopRatedFilms();
-    this._renderMostCommentedFilms(this._dataMostCommentedFilms);
+    this._renderMostCommentedFilms();
 
     this._sortComponent.setSortTypeChangeHandler(this._onSortTypeChange);
   }
@@ -231,6 +238,7 @@ export default class MovieListPresenter {
       this._getDataComments(),
       this._onViewAction,
       this._onCommentsChange,
+      this._filterType,
     );
   }
 
@@ -278,8 +286,9 @@ export default class MovieListPresenter {
   _onMoviesModelEvent(updateType, data) {
     switch (updateType) {
       case UpdateType.PATCH:
-        this._popupPresenter.setDataFilm(data);
-
+        if (this._popupPresenter.getPopupComponent()) {
+          this._popupPresenter.setDataFilm(data);
+        }
         this._moviePresenters.forEach(
           (presenter) => {
             if (presenter.getId() === data.id) {
@@ -289,10 +298,15 @@ export default class MovieListPresenter {
         );
         break;
       case UpdateType.MINOR:
-        // - обновить список (например, когда задача ушла в архив)
+        if (this._popupPresenter.getPopupComponent()) {
+          this._popupPresenter.setDataFilm(data);
+        }
+        this._clearBoardFilms();
+        this._renderBoardFilms();
         break;
       case UpdateType.MAJOR:
-        // - обновить всю доску (например, при переключении фильтра)
+        this._clearBoardFilms({renderedFilmCount: true, resetSortType: true});
+        this._renderBoardFilms();
         break;
     }
   }

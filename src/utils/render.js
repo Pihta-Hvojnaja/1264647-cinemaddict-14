@@ -80,6 +80,11 @@ export const replaceComponent = (newChild, oldChild) => {
  * @param {Object} component - удаляемый компонент
  */
 export const removeComponent = (component) => {
+  if (component === null) {
+    return;
+  }
+
+
   if (!(component instanceof Abstract)) {
     throw new Error('Can remove only components');
   }

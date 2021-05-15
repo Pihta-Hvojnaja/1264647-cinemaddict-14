@@ -1,5 +1,16 @@
 
-/** Коллекция
+/** Коллекция ФИЛЬТРА
+ *  @type {Object} - переменная хранит типы фильтрации
+ */
+export const FilterType = {
+  ALL: 'all',
+  WATCHLIST: 'watchlist',
+  HISTORY: 'history',
+  FAVORITES: 'favorites',
+};
+
+
+/** Коллекция СОРТИРОВКИ
  *  @type {Object} - переменная хранит типы сортировки данных
  */
 export const SortType = {
@@ -10,7 +21,7 @@ export const SortType = {
 };
 
 
-/** Коллекция
+/** Коллекция ДЕЙСТВИЙ ПОЛЬЗОВАТЕЛЯ
  *  @type {Object} - переменная хранит типы действий пользователя
  */
 export const UserAction = {
@@ -20,7 +31,7 @@ export const UserAction = {
 };
 
 
-/** Коллекция
+/** Коллекция ОБНОВЛЕНИЙ
  *  @type {Object} - переменная хранит типы обновлений
  */
 export const UpdateType = {

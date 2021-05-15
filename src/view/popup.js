@@ -91,12 +91,12 @@ const createPopupTemplate = (dataFilm) => {
                   </div>
                 </div>
                 <section class="film-details__controls">
-                  <input ${identifyCheckboxStatus(watchlist)}type="checkbox" class="film-details__control-input visually-hidden" id="watchlist" name="watchlist">
-                  <label for="watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
-                  <input ${identifyCheckboxStatus(alreadyWatched)}type="checkbox" class="film-details__control-input visually-hidden" id="watched" name="watched">
-                  <label for="watched" class="film-details__control-label film-details__control-label--watched">Already watched</label>
-                  <input ${identifyCheckboxStatus(favorite)}type="checkbox" class="film-details__control-input visually-hidden" id="favorite" name="favorite">
-                  <label for="favorite" class="film-details__control-label film-details__control-label--favorite">Add to favorites</label>
+                  <input ${identifyCheckboxStatus(watchlist)}type="checkbox" class="film-details__control-input visually-hidden" id="watchlist-controls" name="watchlist">
+                  <label for="watchlist-controls" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
+                  <input ${identifyCheckboxStatus(alreadyWatched)}type="checkbox" class="film-details__control-input visually-hidden" id="watched-controls" name="watched">
+                  <label for="watched-controls" class="film-details__control-label film-details__control-label--watched">Already watched</label>
+                  <input ${identifyCheckboxStatus(favorite)}type="checkbox" class="film-details__control-input visually-hidden" id="favorite-controls" name="favorite">
+                  <label for="favorite-controls" class="film-details__control-label film-details__control-label--favorite">Add to favorites</label>
                 </section>
               </div>
               <div class="film-details__bottom-container">
@@ -130,19 +130,19 @@ export default class Popup extends AbstractView {
 
   setWatchlistChangeHandler(callback) {
     this._callback.watchlistChange = callback;
-    this.getElement().querySelector('#watchlist')
+    this.getElement().querySelector('#watchlist-controls')
       .addEventListener('change', this._watchlistChangeHandler);
   }
 
   setWatchedChangeHandler(callback) {
     this._callback.watchedChange = callback;
-    this.getElement().querySelector('#watched')
+    this.getElement().querySelector('#watched-controls')
       .addEventListener('change', this._watchedChangeHandler);
   }
 
   setFavoriteChangeHandler(callback) {
     this._callback.favoriteChange = callback;
-    this.getElement().querySelector('#favorite')
+    this.getElement().querySelector('#favorite-controls')
       .addEventListener('change', this._favoriteChangeHandler);
   }
 

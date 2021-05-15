@@ -6,7 +6,7 @@ import PopupView from '../view/popup.js';
 import CommentsView from '../view/comments.js';
 import NewCommentView from '../view/new-comment.js';
 
-import {UserAction, UpdateType} from '../const.js';
+import { FilterType, UserAction, UpdateType } from '../const.js';
 
 
 export default class PopupPresenter {
@@ -26,12 +26,14 @@ export default class PopupPresenter {
     this._onClickDeleteComment = this._onClickDeleteComment.bind(this);
   }
 
-  init(dataFilm, dataComments, changeData, changeComments) {
+  init(dataFilm, dataComments, changeData, changeComments, filterType) {
     this._dataFilm = dataFilm;
     this._dataComments = dataComments.slice();
 
     this._changeData = changeData;
     this._changeComments = changeComments;
+
+    this._filterType = filterType;
 
     const filmComments = this._getCommentsCurrentFilm(this._dataFilm);
 
@@ -48,6 +50,10 @@ export default class PopupPresenter {
 
   setDataFilm(updatedFilm) {
     this._dataFilm = updatedFilm;
+  }
+
+  getPopupComponent() {
+    return this._popupComponent;
   }
 
   replaceComments() {
@@ -111,25 +117,34 @@ export default class PopupPresenter {
   }
 
   _onWatchlistChange() {
+    const updateType = this._filterType === FilterType.WATCHLIST ?
+      UpdateType.MINOR : UpdateType.PATCH;
+
     this._changeData(
       UserAction.UPDATE_FILM,
-      UpdateType.PATCH,
+      updateType,
       updateDataWatchlist(this._dataFilm),
     );
   }
 
   _onWatchedChange() {
+    const updateType = this._filterType === FilterType.HISTORY ?
+      UpdateType.MINOR : UpdateType.PATCH;
+
     this._changeData(
       UserAction.UPDATE_FILM,
-      UpdateType.PATCH,
+      updateType,
       updateDataWatched(this._dataFilm),
     );
   }
 
   _onFavoriteChange() {
+    const updateType = this._filterType === FilterType.FAVORITES ?
+      UpdateType.MINOR : UpdateType.PATCH;
+
     this._changeData(
       UserAction.UPDATE_FILM,
-      UpdateType.PATCH,
+      updateType,
       updateDataFavorite(this._dataFilm),
     );
   }

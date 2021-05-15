@@ -30,7 +30,7 @@ const createFilterItemTemplate = (count) => {
  * @returns {string} - возвращает заполненную разметку шаблона профиля
  */
 const createProfileTemplate = (filters) => {
-  const [ , history] = filters;
+  const [ , , history] = filters;
 
   return history.count === 0 ? ' ' : `<section class="header__profile profile">
                                         ${createFilterItemTemplate(history.count)}

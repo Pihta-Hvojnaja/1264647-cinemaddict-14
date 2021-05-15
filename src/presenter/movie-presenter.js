@@ -4,15 +4,17 @@ import { updateDataWatchlist, updateDataWatched, updateDataFavorite } from '../u
 
 import CardFilmView from '../view/card-film.js';
 
-import {UserAction, UpdateType} from '../const.js';
+import { FilterType,  UserAction, UpdateType} from '../const.js';
 
 
 export default class MoviePresenter {
-  constructor(filmContainer, changeData) {
+  constructor(filmContainer, changeData, filterType) {
     this._filmContainer = filmContainer;
     this._idParentSection = this._filmContainer.parentElement.id;
 
     this._changeData = changeData;
+
+    this._filterType = filterType;
 
     this._cardFilmComponent = null;
 
@@ -54,25 +56,34 @@ export default class MoviePresenter {
   }
 
   _onWatchlistClick() {
+    const updateType = this._filterType === FilterType.WATCHLIST ?
+      UpdateType.MINOR : UpdateType.PATCH;
+
     this._changeData(
       UserAction.UPDATE_FILM,
-      UpdateType.PATCH,
+      updateType,
       updateDataWatchlist(this._dataFilm),
     );
   }
 
   _onWatchedClick() {
+    const updateType = this._filterType === FilterType.HISTORY ?
+      UpdateType.MINOR : UpdateType.PATCH;
+
     this._changeData(
       UserAction.UPDATE_FILM,
-      UpdateType.PATCH,
+      updateType,
       updateDataWatched(this._dataFilm),
     );
   }
 
   _onFavoriteClick() {
+    const updateType = this._filterType === FilterType.FAVORITES ?
+      UpdateType.MINOR : UpdateType.PATCH;
+
     this._changeData(
       UserAction.UPDATE_FILM,
-      UpdateType.PATCH,
+      updateType,
       updateDataFavorite(this._dataFilm),
     );
   }
