@@ -82,6 +82,13 @@ export default class MovieListPresenter {
     return this._commentsModel.getDataComments();
   }
 
+  /** Функция находит по id выбранной карточки данные фильма */
+  _getDataCurrentFilm() {
+    return this._getDataFilms().find(
+      (dataFilm) => dataFilm.id === this._sectionFilmsComponent.getIdCardFilm(),
+    );
+  }
+
   /** Отрисовывает список с кнопками сортировки */
   _renderSort() {
     if (this._sortComponent !== null) {
@@ -129,23 +136,6 @@ export default class MovieListPresenter {
     }
   }
 
-  /** Очищает список фильмов заданной секции */
-  _clearSectionFilms(idSectionFilm) {
-    let newMoviePresenters = [];
-    this._moviePresenters.forEach(
-      (presenter) => {
-        if (presenter.getIdParentSection() === idSectionFilm) {
-          presenter.destroy();
-          return;
-        }
-
-        newMoviePresenters.push(presenter);
-      });
-
-    this._moviePresenters = newMoviePresenters.slice();
-    newMoviePresenters = null;
-  }
-
   /** Отрисовывает карточки в секции Top Reted */
   _renderTopRatedFilms() {
     const ratingFirstElement = this._dataTopRatedFilms[0].filmInfo.totalRating;
@@ -164,9 +154,9 @@ export default class MovieListPresenter {
 
     if (this._dataMostCommentedFilms) {
       this._clearSectionFilms(this._sectionFilmsComponent.getMostCommentedElement().id);
-      this._dataMostCommentedFilms = this._getDataFilms(SortType.COUNT_COMMENTS);
     }
 
+    this._dataMostCommentedFilms = this._getDataFilms(SortType.COUNT_COMMENTS);
     const countCommentsFirstElement = this._dataMostCommentedFilms[0].comments.length;
 
     this._sectionFilmsComponent.isMostCommentedFilms(countCommentsFirstElement);
@@ -189,7 +179,6 @@ export default class MovieListPresenter {
     }
 
     this._dataTopRatedFilms = this._getDataFilms(SortType.RATING);
-    this._dataMostCommentedFilms = this._getDataFilms(SortType.COUNT_COMMENTS);
 
     const dataFilms = (this._currentSortType === SortType.RATING) ?
       this._dataTopRatedFilms : this._getDataFilms(this._currentSortType);
@@ -203,6 +192,34 @@ export default class MovieListPresenter {
     this._renderMostCommentedFilms();
 
     this._sortComponent.setSortTypeChangeHandler(this._onSortTypeChange);
+  }
+
+  /** Отрисовывает попап */
+  _renderPopup() {
+    this._popupPresenter.init(
+      this._getDataCurrentFilm(),
+      this._getDataComments(),
+      this._onViewAction,
+      this._onCommentsChange,
+      this._filterType,
+    );
+  }
+
+  /** Очищает список фильмов заданной секции */
+  _clearSectionFilms(idSectionFilm) {
+    let newMoviePresenters = [];
+    this._moviePresenters.forEach(
+      (presenter) => {
+        if (presenter.getIdParentSection() === idSectionFilm) {
+          presenter.destroy();
+          return;
+        }
+
+        newMoviePresenters.push(presenter);
+      });
+
+    this._moviePresenters = newMoviePresenters.slice();
+    newMoviePresenters = null;
   }
 
   /** Очищает все списки фильмов */
@@ -224,21 +241,19 @@ export default class MovieListPresenter {
     }
   }
 
-  /** Функция находит по id выбранной карточки данные фильма */
-  _getDataCurrentFilm() {
-    return this._getDataFilms().find(
-      (dataFilm) => dataFilm.id === this._sectionFilmsComponent.getIdCardFilm(),
-    );
+  _sendDataFilmPopup(data) {
+    if (this._popupPresenter.getPopupComponent()) {
+      this._popupPresenter.setDataFilm(data);
+    }
   }
 
-  /** Отрисовывает попап */
-  _renderPopup() {
-    this._popupPresenter.init(
-      this._getDataCurrentFilm(),
-      this._getDataComments(),
-      this._onViewAction,
-      this._onCommentsChange,
-      this._filterType,
+  _replaceCurrentCardsFilm(data) {
+    this._moviePresenters.forEach(
+      (presenter) => {
+        if (presenter.getId() === data.id) {
+          presenter.init(data);
+        }
+      },
     );
   }
 
@@ -286,21 +301,11 @@ export default class MovieListPresenter {
   _onMoviesModelEvent(updateType, data) {
     switch (updateType) {
       case UpdateType.PATCH:
-        if (this._popupPresenter.getPopupComponent()) {
-          this._popupPresenter.setDataFilm(data);
-        }
-        this._moviePresenters.forEach(
-          (presenter) => {
-            if (presenter.getId() === data.id) {
-              presenter.init(data);
-            }
-          },
-        );
+        this._sendDataFilmPopup(data);
+        this._replaceCurrentCardsFilm(data);
         break;
       case UpdateType.MINOR:
-        if (this._popupPresenter.getPopupComponent()) {
-          this._popupPresenter.setDataFilm(data);
-        }
+        this._sendDataFilmPopup(data);
         this._clearBoardFilms();
         this._renderBoardFilms();
         break;

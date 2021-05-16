@@ -33,7 +33,7 @@ export default class PopupPresenter {
     this._changeData = changeData;
     this._changeComments = changeComments;
 
-    this._filterType = filterType;
+    this._currentFilterType = filterType;
 
     const filmComments = this._getCommentsCurrentFilm(this._dataFilm);
 
@@ -48,12 +48,12 @@ export default class PopupPresenter {
     this._renderPopup();
   }
 
-  setDataFilm(updatedFilm) {
-    this._dataFilm = updatedFilm;
-  }
-
   getPopupComponent() {
     return this._popupComponent;
+  }
+
+  setDataFilm(updatedFilm) {
+    this._dataFilm = updatedFilm;
   }
 
   replaceComments() {
@@ -76,6 +76,11 @@ export default class PopupPresenter {
   _getCommentsCurrentFilm(dataFilm) {
     const { comments } = dataFilm;
     return comments.map((idComment) => this._dataComments.find((dataComment) => dataComment.id === idComment));
+  }
+
+  _getUpdateType(filterTypeButton) {
+    return this._currentFilterType === filterTypeButton ?
+      UpdateType.MINOR : UpdateType.PATCH;
   }
 
   _renderPopup() {
@@ -104,6 +109,7 @@ export default class PopupPresenter {
     removeComponent(this._commentsComponent);
     removeComponent(this._popupComponent);
     document.removeEventListener('keydown', this._onEscKeyDown);
+    this._popupComponent = null;
   }
 
   _onCloseButtonClick() {
@@ -117,34 +123,25 @@ export default class PopupPresenter {
   }
 
   _onWatchlistChange() {
-    const updateType = this._filterType === FilterType.WATCHLIST ?
-      UpdateType.MINOR : UpdateType.PATCH;
-
     this._changeData(
       UserAction.UPDATE_FILM,
-      updateType,
+      this._getUpdateType(FilterType.WATCHLIST),
       updateDataWatchlist(this._dataFilm),
     );
   }
 
   _onWatchedChange() {
-    const updateType = this._filterType === FilterType.HISTORY ?
-      UpdateType.MINOR : UpdateType.PATCH;
-
     this._changeData(
       UserAction.UPDATE_FILM,
-      updateType,
+      this._getUpdateType(FilterType.HISTORY),
       updateDataWatched(this._dataFilm),
     );
   }
 
   _onFavoriteChange() {
-    const updateType = this._filterType === FilterType.FAVORITES ?
-      UpdateType.MINOR : UpdateType.PATCH;
-
     this._changeData(
       UserAction.UPDATE_FILM,
-      updateType,
+      this._getUpdateType(FilterType.FAVORITES),
       updateDataFavorite(this._dataFilm),
     );
   }

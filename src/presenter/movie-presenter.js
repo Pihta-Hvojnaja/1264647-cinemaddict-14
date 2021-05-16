@@ -14,7 +14,7 @@ export default class MoviePresenter {
 
     this._changeData = changeData;
 
-    this._filterType = filterType;
+    this._currentFilterType = filterType;
 
     this._cardFilmComponent = null;
 
@@ -55,35 +55,31 @@ export default class MoviePresenter {
     removeComponent(this._cardFilmComponent);
   }
 
-  _onWatchlistClick() {
-    const updateType = this._filterType === FilterType.WATCHLIST ?
+  _getUpdateType(filterTypeButton) {
+    return this._currentFilterType === filterTypeButton ?
       UpdateType.MINOR : UpdateType.PATCH;
+  }
 
+  _onWatchlistClick() {
     this._changeData(
       UserAction.UPDATE_FILM,
-      updateType,
+      this._getUpdateType(FilterType.WATCHLIST),
       updateDataWatchlist(this._dataFilm),
     );
   }
 
   _onWatchedClick() {
-    const updateType = this._filterType === FilterType.HISTORY ?
-      UpdateType.MINOR : UpdateType.PATCH;
-
     this._changeData(
       UserAction.UPDATE_FILM,
-      updateType,
+      this._getUpdateType(FilterType.HISTORY),
       updateDataWatched(this._dataFilm),
     );
   }
 
   _onFavoriteClick() {
-    const updateType = this._filterType === FilterType.FAVORITES ?
-      UpdateType.MINOR : UpdateType.PATCH;
-
     this._changeData(
       UserAction.UPDATE_FILM,
-      updateType,
+      this._getUpdateType(FilterType.FAVORITES),
       updateDataFavorite(this._dataFilm),
     );
   }
