@@ -24,11 +24,14 @@ const createSiteFilterTemplate = (filters, currentFilterType) => {
     .map((filter) => createFilterItemTemplate(filter, currentFilterType))
     .join('');
 
+  const statusButtonStatistic = currentFilterType === FilterType.ADDITIONAL ?
+    ' main-navigation__item--active': '';
+
   return `<nav class="main-navigation">
             <div class="main-navigation__items">
               ${filterItemsTemplate}
             </div>
-            <a href="#stats" class="main-navigation__additional">Stats</a>
+            <a id="additional" href="#stats" class="main-navigation__additional${statusButtonStatistic}">Stats</a>
           </nav>`;
 };
 
@@ -46,14 +49,14 @@ export default class SiteFilter extends AbstractView {
     return createSiteFilterTemplate(this._filters, this._currentFilterType);
   }
 
+  setFilterTypeChangeHandler(callback) {
+    this._callback.filterTypeChange = callback;
+    this.getElement().addEventListener('click', this._filterTypeChangeHandler);
+  }
+
   _filterTypeChangeHandler(evt) {
     evt.preventDefault();
 
     this._callback.filterTypeChange(evt.target.id);
-  }
-
-  setFilterTypeChangeHandler(callback) {
-    this._callback.filterTypeChange = callback;
-    this.getElement().querySelector('.main-navigation__items').addEventListener('click', this._filterTypeChangeHandler);
   }
 }

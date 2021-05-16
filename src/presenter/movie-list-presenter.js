@@ -3,7 +3,7 @@ import { filter } from '../utils/filter.js';
 import { render, removeComponent } from '../utils/render.js';
 import { sortDate, sortTopRated, sortMostCommented } from '../utils/sort-data.js';
 
-import { SortType, UpdateType, UserAction } from '../const.js';
+import { FilterType, SortType, UpdateType, UserAction } from '../const.js';
 
 import SortView from '../view/sort.js';
 
@@ -63,6 +63,11 @@ export default class MovieListPresenter {
 
   _getDataFilms(sortType = this._currentSortType) {
     this._filterType = this._filterModel.getFilter();
+
+    if (this._filterType === FilterType.ADDITIONAL) {
+      return;
+    }
+
     const dataFilms = this._moviesModel.getDataFilms();
     const filtredDataFilms = filter[this._filterType](dataFilms);
 
@@ -312,6 +317,10 @@ export default class MovieListPresenter {
       case UpdateType.MAJOR:
         this._clearBoardFilms({renderedFilmCount: true, resetSortType: true});
         this._renderBoardFilms();
+        break;
+      case UpdateType.ADDITIONAL:
+        this._clearBoardFilms({renderedFilmCount: true, resetSortType: true});
+        // render statisticComponent
         break;
     }
   }

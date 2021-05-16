@@ -26,26 +26,25 @@ const createFilterItemTemplate = (count) => {
 
 /**
  * Ф-ция создаеш шаблон профиля
- * @param {Object} filters - объект данных фильтра
+ * @param {Object} filter - объект данных фильтра
  * @returns {string} - возвращает заполненную разметку шаблона профиля
  */
-const createProfileTemplate = (filters) => {
-  const [ , , history] = filters;
+const createProfileTemplate = (filter) => {
 
   return history.count === 0 ? ' ' : `<section class="header__profile profile">
-                                        ${createFilterItemTemplate(history.count)}
+                                        ${createFilterItemTemplate(filter.count)}
                                         <img class="profile__avatar" src="images/bitmap@2x.png" alt="Avatar" width="35" height="35">
                                       </section>`;
 };
 
 
 export default class Profile extends AbstractView {
-  constructor(filters) {
+  constructor(filter) {
     super();
-    this._filters = filters;
+    this._filter = filter;
   }
 
   getTemplate() {
-    return createProfileTemplate(this._filters);
+    return createProfileTemplate(this._filter);
   }
 }

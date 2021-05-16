@@ -14,6 +14,7 @@ export default class FilterPresenter {
     this._moviesModal = moviesModal;
 
     this._filterComponent = null;
+    this._filters = null;
 
     this._onModelEvent = this._onModelEvent.bind(this);
     this._onFilterTypeChange = this._onFilterTypeChange.bind(this);
@@ -23,12 +24,12 @@ export default class FilterPresenter {
   }
 
   init() {
-    const filters = this._getFilters();
+    this._filters = this._getFilters();
     const prevProfileComponent = this._profileComponent;
     const prevFilterComponent = this._filterComponent;
 
-    this._profileComponent = new ProfileView(filters);
-    this._filterComponent = new SiteFilterView(filters, this._filterModel.getFilter());
+    this._profileComponent = new ProfileView(this.getCountCurrentFilter(FilterType.HISTORY));
+    this._filterComponent = new SiteFilterView(this._filters, this._filterModel.getFilter());
     this._filterComponent.setFilterTypeChangeHandler(this._onFilterTypeChange);
 
     if (prevProfileComponent === null || prevFilterComponent === null) {
@@ -43,16 +44,8 @@ export default class FilterPresenter {
     removeComponent(prevFilterComponent);
   }
 
-  _onModelEvent() {
-    this.init();
-  }
-
-  _onFilterTypeChange(filterType) {
-    if (this._filterModel.getFilter() === filterType) {
-      return;
-    }
-
-    this._filterModel.setFilter(UpdateType.MAJOR, filterType);
+  getCountCurrentFilter(typeFilter) {
+    return this._filters.find((filter) => filter.type === typeFilter);
   }
 
   _getFilters() {
@@ -79,5 +72,22 @@ export default class FilterPresenter {
         count: filter[FilterType.FAVORITES](dataFilms).length,
       },
     ];
+  }
+
+  _onFilterTypeChange(filterType) {
+    if (this._filterModel.getFilter() === filterType) {
+      return;
+    }
+
+    if (filterType === FilterType.ADDITIONAL) {
+      this._filterModel.setFilter(UpdateType.ADDITIONAL, filterType);
+      return;
+    }
+
+    this._filterModel.setFilter(UpdateType.MAJOR, filterType);
+  }
+
+  _onModelEvent() {
+    this.init();
   }
 }

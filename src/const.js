@@ -7,6 +7,7 @@ export const FilterType = {
   WATCHLIST: 'watchlist',
   HISTORY: 'history',
   FAVORITES: 'favorites',
+  ADDITIONAL: 'additional',
 };
 
 
@@ -38,4 +39,5 @@ export const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  ADDITIONAL: 'ADDITIONAL',
 };
