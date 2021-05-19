@@ -54,6 +54,7 @@ const movieListPresenter = new MovieListPresenter(
   moviesModel,
   commentsModel,
   filterModel,
+  filterPresenter,
 );
 
 movieListPresenter.init();

@@ -45,7 +45,7 @@ export default class FilterPresenter {
   }
 
   getCountCurrentFilter(typeFilter) {
-    return this._filters.find((filter) => filter.type === typeFilter);
+    return this._filters.find((filter) => filter.type === typeFilter).count;
   }
 
   _getFilters() {

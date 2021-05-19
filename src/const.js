@@ -1,4 +1,17 @@
 
+export const ONE_HOUR = 60;
+
+/**
+ * @type {Object} - перечисление с типами эмоций
+ */
+export const EmotionType = {
+  SMILE: 'smile',
+  SLEEPING: 'sleeping',
+  PUKE: 'puke',
+  ANGRY: 'angry',
+};
+
+
 /** Коллекция ФИЛЬТРА
  *  @type {Object} - переменная хранит типы фильтрации
  */
@@ -40,4 +53,16 @@ export const UpdateType = {
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
   ADDITIONAL: 'ADDITIONAL',
+};
+
+
+/** Коллекция ВРЕМЕННЫХ ИНТЕРВАЛОВ
+ *  @type {Object} - переменная хранит временные интервалы для фильтра статистики
+ */
+export const TypeInterval = {
+  ALL: 'all-time',
+  TODAY: 'day',
+  WEEK: 'week',
+  MONTH: 'month',
+  YEAR: 'year',
 };

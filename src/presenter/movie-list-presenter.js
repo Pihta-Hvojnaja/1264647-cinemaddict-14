@@ -6,11 +6,10 @@ import { sortDate, sortTopRated, sortMostCommented } from '../utils/sort-data.js
 import { FilterType, SortType, UpdateType, UserAction } from '../const.js';
 
 import SortView from '../view/sort.js';
-
 import NoFilmsView from '../view/no-films.js';
 import SectionFilmsView from '../view/section-films.js';
-
 import ButtonShowMoreView from '../view/button-show-more.js';
+import StatisticsView from '../view/statistics.js';
 
 import MoviePresenter from './movie-presenter.js';
 import PopupPresenter from './popup-presenter.js';
@@ -22,10 +21,18 @@ const FILM_COUNT_LIST_EXTRA = 2;
 
 export default class MovieListPresenter {
 
-  constructor(listFilmsContainer, popupContainer, moviesModel, commentsModel, filterModel) {
+  constructor(
+    listFilmsContainer,
+    popupContainer,
+    moviesModel,
+    commentsModel,
+    filterModel,
+    filterPresenter) {
+
     this._moviesModel = moviesModel;
     this._commentsModel = commentsModel;
     this._filterModel = filterModel;
+    this._filterPresenter = filterPresenter;
 
     this._listFilmsContainer = listFilmsContainer;
     this._popupContainer = popupContainer;
@@ -37,8 +44,9 @@ export default class MovieListPresenter {
     this._noFilmsComponent = new NoFilmsView();
     this._sectionFilmsComponent = null;
     this._buttonShowMoreComponent = null;
-    this._popupPresenter = new PopupPresenter(this._popupContainer);
+    this._statisticsComponent = null;
 
+    this._popupPresenter = new PopupPresenter(this._popupContainer);
     this._moviePresenters = [];
 
     this._onSortTypeChange = this._onSortTypeChange.bind(this);
@@ -64,12 +72,12 @@ export default class MovieListPresenter {
   _getDataFilms(sortType = this._currentSortType) {
     this._filterType = this._filterModel.getFilter();
 
-    if (this._filterType === FilterType.ADDITIONAL) {
-      return;
-    }
-
     const dataFilms = this._moviesModel.getDataFilms();
     const filtredDataFilms = filter[this._filterType](dataFilms);
+
+    if (this._filterType === FilterType.ADDITIONAL) {
+      return filtredDataFilms;
+    }
 
     switch (sortType) {
       case SortType.DATE:
@@ -229,20 +237,26 @@ export default class MovieListPresenter {
 
   /** Очищает все списки фильмов */
   _clearBoardFilms({renderedFilmCount = false, resetSortType = false} = {}) {
-    this._moviePresenters.forEach((presenter) => presenter.destroy());
-    this._moviePresenters = [];
+    if (this._statisticsComponent) {
+      removeComponent(this._statisticsComponent);
+      this._statisticsComponent = null;
 
-    removeComponent(this._sortComponent);
-    removeComponent(this._noFilmsComponent);
-    removeComponent(this._sectionFilmsComponent);
-    removeComponent(this._buttonShowMoreComponent);
+    } else {
+      this._moviePresenters.forEach((presenter) => presenter.destroy());
+      this._moviePresenters = [];
 
-    if (renderedFilmCount) {
-      this._renderedFilmCount = FILM_COUNT_PER_STEP;
-    }
+      removeComponent(this._sortComponent);
+      removeComponent(this._noFilmsComponent);
+      removeComponent(this._sectionFilmsComponent);
+      removeComponent(this._buttonShowMoreComponent);
 
-    if (resetSortType) {
-      this._currentSortType = SortType.DEFAULT;
+      if (renderedFilmCount) {
+        this._renderedFilmCount = FILM_COUNT_PER_STEP;
+      }
+
+      if (resetSortType) {
+        this._currentSortType = SortType.DEFAULT;
+      }
     }
   }
 
@@ -320,7 +334,8 @@ export default class MovieListPresenter {
         break;
       case UpdateType.ADDITIONAL:
         this._clearBoardFilms({renderedFilmCount: true, resetSortType: true});
-        // render statisticComponent
+        this._statisticsComponent = new StatisticsView(this._getDataFilms(), this._filterPresenter.getCountCurrentFilter(FilterType.HISTORY));
+        render(this._listFilmsContainer, this._statisticsComponent);
         break;
     }
   }

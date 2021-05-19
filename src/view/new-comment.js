@@ -1,16 +1,8 @@
 
-import SmartView from './smart.js';
 import he from 'he';
 
-/**
- * @type {Object} - перечисление с типами эмоций
- */
-const EmotionType = {
-  SMILE: 'smile',
-  SLEEPING: 'sleeping',
-  PUKE: 'puke',
-  ANGRY: 'angry',
-};
+import SmartView from './smart.js';
+import { EmotionType } from '../const.js';
 
 
 /**

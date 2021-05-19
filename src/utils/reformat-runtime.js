@@ -1,5 +1,5 @@
 
-const ONE_HOUR = 60;
+import { ONE_HOUR } from '../const.js';
 
 /**
  * Функция переформатирует время из _mm -> в _h _mm
