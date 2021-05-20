@@ -7,6 +7,7 @@ export default class CommentsModel extends Observer {
   constructor() {
     super();
     this._dataComments;
+    this._dataComment;
   }
 
   getDataComments() {
@@ -15,6 +16,11 @@ export default class CommentsModel extends Observer {
 
   setDataComments(dataComments) {
     this._dataComments = dataComments.slice();
+  }
+
+  setDataComment(updateType, dataComment) {
+    this._dataComment = dataComment;
+    this._notify(updateType);
   }
 
   updateDataComments(updateType, idComment) {

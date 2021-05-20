@@ -20,24 +20,26 @@ export default class PopupPresenter {
 
     this._onCloseButtonClick = this._onCloseButtonClick.bind(this);
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
+    this._onCtrlEnterKeyDown = this._onCtrlEnterKeyDown.bind(this);
     this._onWatchlistChange = this._onWatchlistChange.bind(this);
     this._onWatchedChange = this._onWatchedChange.bind(this);
     this._onFavoriteChange = this._onFavoriteChange.bind(this);
     this._onClickDeleteComment = this._onClickDeleteComment.bind(this);
   }
 
-  init(dataFilm, dataComments, changeData, changeComments, filterType) {
+  init(dataFilm, dataComments, changeData, filterType, updateType) {
     this._dataFilm = dataFilm;
     this._dataComments = dataComments.slice();
-
     this._changeData = changeData;
-    this._changeComments = changeComments;
-
     this._currentFilterType = filterType;
+    let prevScrollTopPopup = null;
+    let prevScrollLeftPopup = null;
 
     const filmComments = this._getCommentsCurrentFilm(this._dataFilm);
 
     if (this._popupComponent) {
+      prevScrollTopPopup = this._popupComponent.getElement().scrollTop;
+      prevScrollLeftPopup = this._popupComponent.getElement().scrollLeft;
       this._closePopup();
     }
 
@@ -46,6 +48,11 @@ export default class PopupPresenter {
     this._popupComponent = new PopupView(this._dataFilm);
 
     this._renderPopup();
+
+    if (updateType === UpdateType.MAJOR) {
+      this._popupComponent.getElement().scrollTop = prevScrollTopPopup;
+      this._popupComponent.getElement().scrollLeft = prevScrollLeftPopup;
+    }
   }
 
   getPopupComponent() {
@@ -66,6 +73,13 @@ export default class PopupPresenter {
 
     replaceComponent(this._commentsComponent, prevCommentsComponent);
     removeComponent(prevCommentsComponent);
+  }
+
+  replaceNewComment() {
+    const prevNewCommentComponent = this._newCommentComponent;
+    this._newCommentComponent = new NewCommentView();
+    replaceComponent(this._newCommentComponent, prevNewCommentComponent);
+    removeComponent(prevNewCommentComponent);
   }
 
   /**
@@ -91,7 +105,9 @@ export default class PopupPresenter {
     this._popupComponent.setFavoriteChangeHandler(this._onFavoriteChange);
     this._commentsComponent.setClickDeleteHandler(this._onClickDeleteComment);
     this._popupComponent.setCloseClickHandler(this._onCloseButtonClick);
+
     document.addEventListener('keydown', this._onEscKeyDown);
+    document.addEventListener('keydown', this._onCtrlEnterKeyDown);
 
     render(this._popupContainer, this._popupComponent);
     render(
@@ -109,6 +125,7 @@ export default class PopupPresenter {
     removeComponent(this._commentsComponent);
     removeComponent(this._popupComponent);
     document.removeEventListener('keydown', this._onEscKeyDown);
+    document.removeEventListener('keydown', this._onCtrlEnterKeyDown);
     this._popupComponent = null;
   }
 
@@ -119,6 +136,17 @@ export default class PopupPresenter {
   _onEscKeyDown(evt) {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       this._closePopup();
+    }
+  }
+
+  _onCtrlEnterKeyDown(evt) {
+    if (evt.ctrlKey && evt.key === 'enter' || evt.key === 'Enter') {
+      this._changeData(
+        UserAction.ADD_COMMENT,
+        UpdateType.MAJOR,
+        this._newCommentComponent.getData(),
+      );
+      this.replaceNewComment();
     }
   }
 
@@ -161,7 +189,7 @@ export default class PopupPresenter {
 
     this._changeData(
       UserAction.DELETE_COMMENT,
-      UpdateType.MAJOR,
+      UpdateType.MINOR,
       idCommentToDelete,
     );
   }

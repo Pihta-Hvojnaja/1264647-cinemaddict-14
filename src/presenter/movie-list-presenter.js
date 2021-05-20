@@ -29,6 +29,8 @@ export default class MovieListPresenter {
     filterModel,
     filterPresenter) {
 
+    this._dataCurrentFilm = null;
+
     this._moviesModel = moviesModel;
     this._commentsModel = commentsModel;
     this._filterModel = filterModel;
@@ -208,13 +210,13 @@ export default class MovieListPresenter {
   }
 
   /** Отрисовывает попап */
-  _renderPopup() {
+  _renderPopup(updateType) {
     this._popupPresenter.init(
-      this._getDataCurrentFilm(),
+      this._dataCurrentFilm,
       this._getDataComments(),
       this._onViewAction,
-      this._onCommentsChange,
       this._filterType,
+      updateType,
     );
   }
 
@@ -304,6 +306,7 @@ export default class MovieListPresenter {
 
   /** Обработчик клика по карточке фильма */
   _onCardFilmClick() {
+    this._dataCurrentFilm = this._getDataCurrentFilm();
     this._renderPopup();
   }
 
@@ -312,8 +315,14 @@ export default class MovieListPresenter {
       case UserAction.UPDATE_FILM:
         this._moviesModel.updateDataFilms(updateType, update);
         break;
+      case UserAction.ADD_COMMENT:
+        this._commentsModel.setDataComment(updateType, update);
+        //обновление this._moviesModel
+        //обновление this._commentsModel
+        break;
       case UserAction.DELETE_COMMENT:
         this._commentsModel.updateDataComments(updateType, update);
+        break;
     }
   }
 
@@ -342,9 +351,14 @@ export default class MovieListPresenter {
 
   _onCommentsModelEvent(updateType) {
     switch (updateType) {
-      case UpdateType.MAJOR:
+      case UpdateType.MINOR:
         this._popupPresenter.replaceComments();
         this._renderMostCommentedFilms();
+        break;
+      case UpdateType.MAJOR:
+        this._clearBoardFilms();
+        this._renderBoardFilms();
+        this._renderPopup(updateType);
         break;
     }
   }
