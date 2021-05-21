@@ -1,15 +1,8 @@
 
-import SmartView from './smart.js';
+import he from 'he';
 
-/**
- * @type {Object} - перечисление с типами эмоций
- */
-const EmotionType = {
-  SMILE: 'smile',
-  SLEEPING: 'sleeping',
-  PUKE: 'puke',
-  ANGRY: 'angry',
-};
+import SmartView from './smart.js';
+import { EmotionType } from '../const.js';
 
 
 /**
@@ -44,7 +37,7 @@ const createNewCommentTemplate = (dataComent) => {
               ${getImgEmotion(emotion)}
             </div>
             <label class="film-details__comment-label">
-              <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment">${comment}</textarea>
+              <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment">${he.encode(comment)}</textarea>
             </label>
             <div class="film-details__emoji-list">
               <input ${getStatusRadioButton(emotion, EmotionType.SMILE)} class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-smile" value="smile">
@@ -86,6 +79,10 @@ export default class NewComment extends SmartView {
 
   getTemplate() {
     return createNewCommentTemplate(this._data);
+  }
+
+  getData() {
+    return this._data;
   }
 
   restoreHandlers() {

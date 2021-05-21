@@ -4,13 +4,17 @@ import { updateDataWatchlist, updateDataWatched, updateDataFavorite } from '../u
 
 import CardFilmView from '../view/card-film.js';
 
+import { FilterType,  UserAction, UpdateType} from '../const.js';
+
 
 export default class MoviePresenter {
-  constructor(filmContainer, changeData) {
+  constructor(filmContainer, changeData, filterType) {
     this._filmContainer = filmContainer;
     this._idParentSection = this._filmContainer.parentElement.id;
 
     this._changeData = changeData;
+
+    this._currentFilterType = filterType;
 
     this._cardFilmComponent = null;
 
@@ -51,16 +55,33 @@ export default class MoviePresenter {
     removeComponent(this._cardFilmComponent);
   }
 
+  _getUpdateType(filterTypeButton) {
+    return this._currentFilterType === filterTypeButton ?
+      UpdateType.MINOR : UpdateType.PATCH;
+  }
+
   _onWatchlistClick() {
-    this._changeData(updateDataWatchlist(this._dataFilm));
+    this._changeData(
+      UserAction.UPDATE_FILM,
+      this._getUpdateType(FilterType.WATCHLIST),
+      updateDataWatchlist(this._dataFilm),
+    );
   }
 
   _onWatchedClick() {
-    this._changeData(updateDataWatched(this._dataFilm));
+    this._changeData(
+      UserAction.UPDATE_FILM,
+      this._getUpdateType(FilterType.HISTORY),
+      updateDataWatched(this._dataFilm),
+    );
   }
 
   _onFavoriteClick() {
-    this._changeData(updateDataFavorite(this._dataFilm));
+    this._changeData(
+      UserAction.UPDATE_FILM,
+      this._getUpdateType(FilterType.FAVORITES),
+      updateDataFavorite(this._dataFilm),
+    );
   }
 }
 

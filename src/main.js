@@ -3,12 +3,14 @@ import { render } from './utils/render.js';
 
 import { generateDataFilm } from './mock/data-film.js';
 import { generateDataComments } from './mock/data-comments.js';
-import { generateFilter } from './mock/filter.js';
 
-import ProfileView from './view/profile.js';
-import SiteFilterView from './view/site-filter.js';
 import FooterStatisticsView from './view/footer-statistics.js';
 
+import FilterModel from './model/filter-model.js';
+import MoviesModel from './model/movies-model.js';
+import CommentsModel from './model/comments-model.js';
+
+import FilterPresenter from './presenter/filter-presenter.js';
 import MovieListPresenter from './presenter/movie-list-presenter.js';
 
 
@@ -27,30 +29,38 @@ const footerStatisticsElement = bodyElement.querySelector('.footer__statistics')
    ========================================================================== */
 
 const dataFilms = new Array(FILM_COUNT).fill().map(generateDataFilm);
+const filterModel = new FilterModel();
+const moviesModel = new MoviesModel();
+moviesModel.setDataFilms(dataFilms);
+
 const dataComments = generateDataComments();
-const filters = generateFilter(dataFilms);
-
-
-/* PROFILE
-   ========================================================================== */
-
-render(headerSiteElement, new ProfileView(filters));
+const commentsModel = new CommentsModel();
+commentsModel.setDataComments(dataComments);
 
 
 /* FILTER
    ========================================================================== */
 
-render(mainSiteElement, new SiteFilterView(filters));
+const filterPresenter = new FilterPresenter(headerSiteElement, mainSiteElement, filterModel, moviesModel);
+filterPresenter.init();
 
 
 /* BOARD FILMS
    ========================================================================== */
 
-const movieListPresenter = new MovieListPresenter(mainSiteElement, bodyElement);
-movieListPresenter.init(dataFilms, dataComments);
+const movieListPresenter = new MovieListPresenter(
+  mainSiteElement,
+  bodyElement,
+  moviesModel,
+  commentsModel,
+  filterModel,
+  filterPresenter,
+);
+
+movieListPresenter.init();
 
 
 /* FOOTER
    ========================================================================== */
 
-render(footerStatisticsElement, new FooterStatisticsView(dataFilms));
+render(footerStatisticsElement, new FooterStatisticsView(moviesModel.getDataFilms()));

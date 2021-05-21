@@ -1,5 +1,6 @@
 
 import { nanoid } from 'nanoid';
+import dayjs from 'dayjs';
 
 import {
   FILM_NAMES,
@@ -22,6 +23,17 @@ import {
 export const generateDataFilm = () => {
   const nameFilm = getRandomElement(FILM_NAMES);
 
+  const alreadyWatched = Boolean(getRandomInteger(0, 1));
+
+  const date = dayjs(
+    `19${getRandomInteger(50, 69)}-${getRandomInteger(1, 12)}-${getRandomInteger(1, 31)}:${getRandomInteger(0, 23)}:${getRandomInteger(0, 59)}:${getRandomInteger(0, 59)}:${getRandomInteger(1, 1000)}`,
+  ).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+
+  const watchingDate = dayjs(
+    `202${getRandomInteger(0, 1)}-${getRandomInteger(1, 12)}-${getRandomInteger(1, 31)}:${getRandomInteger(0, 23)}:${getRandomInteger(0, 59)}:${getRandomInteger(0, 59)}:${getRandomInteger(1, 1000)}`,
+  ).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
+
+
   return {
     id: nanoid(),
     comments: getArrayRandomLength(COMMENTS),
@@ -37,7 +49,7 @@ export const generateDataFilm = () => {
       actors: getArrayRandomLength(DIRECTORS, 1),
 
       release: {
-        date: `${getRandomInteger(1959, 1970)}-0${getRandomInteger(1, 9)}-0${getRandomInteger(1, 9)}T00:00:00.000Z`,
+        date: date,
         releaseCountry: 'Finland',
       },
 
@@ -48,8 +60,8 @@ export const generateDataFilm = () => {
 
     userDetails: {
       watchlist: Boolean(getRandomInteger(0, 1)),
-      alreadyWatched: Boolean(getRandomInteger(0, 1)),
-      watchingDate: '2019-04-12T16:12:32.554Z',
+      alreadyWatched: alreadyWatched,
+      watchingDate: alreadyWatched ? watchingDate : null,
       favorite: Boolean(getRandomInteger(0, 1)),
     },
   };

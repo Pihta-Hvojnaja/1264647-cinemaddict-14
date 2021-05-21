@@ -1,16 +1,15 @@
 
+import { filter } from '../utils/filter.js';
 import { render, removeComponent } from '../utils/render.js';
 import { sortDate, sortTopRated, sortMostCommented } from '../utils/sort-data.js';
-import { updateItems, removeItemFromItems } from '../utils/update-items.js';
 
-import { SortType } from '../const.js';
+import { FilterType, SortType, UpdateType, UserAction } from '../const.js';
 
 import SortView from '../view/sort.js';
-
 import NoFilmsView from '../view/no-films.js';
 import SectionFilmsView from '../view/section-films.js';
-
 import ButtonShowMoreView from '../view/button-show-more.js';
+import StatisticsView from '../view/statistics.js';
 
 import MoviePresenter from './movie-presenter.js';
 import PopupPresenter from './popup-presenter.js';
@@ -22,43 +21,96 @@ const FILM_COUNT_LIST_EXTRA = 2;
 
 export default class MovieListPresenter {
 
-  constructor(listFilmsContainer, popupContainer) {
+  constructor(
+    listFilmsContainer,
+    popupContainer,
+    moviesModel,
+    commentsModel,
+    filterModel,
+    filterPresenter) {
+
+    this._dataCurrentFilm = null;
+
+    this._moviesModel = moviesModel;
+    this._commentsModel = commentsModel;
+    this._filterModel = filterModel;
+    this._filterPresenter = filterPresenter;
+
     this._listFilmsContainer = listFilmsContainer;
     this._popupContainer = popupContainer;
 
     this._renderedFilmCount = FILM_COUNT_PER_STEP;
     this._currentSortType = SortType.DEFAULT;
 
-    this._sortComponent = new SortView();
+    this._sortComponent = null;
     this._noFilmsComponent = new NoFilmsView();
     this._sectionFilmsComponent = null;
-    this._buttonShowMoreComponent = new ButtonShowMoreView();
-    this._popupPresenter = new PopupPresenter(this._popupContainer);
+    this._buttonShowMoreComponent = null;
+    this._statisticsComponent = null;
 
+    this._popupPresenter = new PopupPresenter(this._popupContainer);
     this._moviePresenters = [];
 
     this._onSortTypeChange = this._onSortTypeChange.bind(this);
     this._onCardFilmClick = this._onCardFilmClick.bind(this);
     this._onButtomShowMoreClick = this._onButtomShowMoreClick.bind(this);
 
-    this._onFilmChange = this._onFilmChange.bind(this);
-    this._onCommentsChange = this._onCommentsChange.bind(this);
+    this._onViewAction = this._onViewAction.bind(this);
+    this._onMoviesModelEvent = this._onMoviesModelEvent.bind(this);
+    this._onCommentsModelEvent = this._onCommentsModelEvent.bind(this);
+
+    this._moviesModel.addObserver(this._onMoviesModelEvent);
+    this._filterModel.addObserver(this._onMoviesModelEvent);
+    this._commentsModel.addObserver(this._onCommentsModelEvent);
   }
 
-  init(dataFilms, dataComments) {
-    this._sourceDataFilms = dataFilms.slice();
-    this._dataFilms = dataFilms.slice();
-    this._dataComments = dataComments.slice();
-
+  init() {
     this._dataTopRatedFilms = null;
     this._dataMostCommentedFilms = null;
 
-    this._renderSort();
     this._renderBoardFilms();
+  }
+
+  _getDataFilms(sortType = this._currentSortType) {
+    this._filterType = this._filterModel.getFilter();
+
+    const dataFilms = this._moviesModel.getDataFilms();
+    const filtredDataFilms = filter[this._filterType](dataFilms);
+
+    if (this._filterType === FilterType.ADDITIONAL) {
+      return filtredDataFilms;
+    }
+
+    switch (sortType) {
+      case SortType.DATE:
+        return sortDate(filtredDataFilms);
+      case SortType.RATING:
+        return sortTopRated(filtredDataFilms);
+      case SortType.COUNT_COMMENTS:
+        return sortMostCommented(filtredDataFilms);
+      case SortType.DEFAULT:
+        return filtredDataFilms;
+    }
+  }
+
+  _getDataComments() {
+    return this._commentsModel.getDataComments();
+  }
+
+  /** Функция находит по id выбранной карточки данные фильма */
+  _getDataCurrentFilm() {
+    return this._getDataFilms().find(
+      (dataFilm) => dataFilm.id === this._sectionFilmsComponent.getIdCardFilm(),
+    );
   }
 
   /** Отрисовывает список с кнопками сортировки */
   _renderSort() {
+    if (this._sortComponent !== null) {
+      this._sortComponent = null;
+    }
+
+    this._sortComponent = new SortView(this._currentSortType);
     render(this._listFilmsContainer, this._sortComponent);
   }
 
@@ -75,7 +127,7 @@ export default class MovieListPresenter {
 
   /** Отрисовывает карточку фильма */
   _renderFilm(container, dataFilm) {
-    const moviePresenter = new MoviePresenter(container, this._onFilmChange);
+    const moviePresenter = new MoviePresenter(container, this._onViewAction, this._filterType);
     moviePresenter.init(dataFilm);
     this._moviePresenters.push(moviePresenter);
   }
@@ -88,10 +140,84 @@ export default class MovieListPresenter {
 
   /** Отрисовывает кнопку Show more */
   _renderButtomShowMore() {
-    if (this._dataFilms.length > FILM_COUNT_PER_STEP) {
+    if (this._getDataFilms().length > this._renderedFilmCount) {
+      if (this._buttonShowMoreComponent !== null) {
+        this._buttonShowMoreComponent = null;
+      }
+
+      this._buttonShowMoreComponent = new ButtonShowMoreView();
       render(this._sectionFilmsComponent.getAllFilmsElement(), this._buttonShowMoreComponent);
       this._buttonShowMoreComponent.setClickHandler(this._onButtomShowMoreClick);
     }
+  }
+
+  /** Отрисовывает карточки в секции Top Reted */
+  _renderTopRatedFilms() {
+    const ratingFirstElement = this._dataTopRatedFilms[0].filmInfo.totalRating;
+
+    if (ratingFirstElement === 0) {
+      this._sectionFilmsComponent.isTopRatedFilms();
+      return;
+    }
+
+    this._dataTopRatedFilms.slice(0, FILM_COUNT_LIST_EXTRA)
+      .forEach((dataFilm) => this._renderFilm(this._sectionFilmsComponent.getTopRatedContainerElement(), dataFilm));
+  }
+
+  /** Отрисовывает карточки в секции Most Commented */
+  _renderMostCommentedFilms() {
+
+    if (this._dataMostCommentedFilms) {
+      this._clearSectionFilms(this._sectionFilmsComponent.getMostCommentedElement().id);
+    }
+
+    this._dataMostCommentedFilms = this._getDataFilms(SortType.COUNT_COMMENTS);
+    const countCommentsFirstElement = this._dataMostCommentedFilms[0].comments.length;
+
+    this._sectionFilmsComponent.isMostCommentedFilms(countCommentsFirstElement);
+
+    if (countCommentsFirstElement === 0) {
+      return;
+    }
+
+    this._dataMostCommentedFilms.slice(0, FILM_COUNT_LIST_EXTRA)
+      .forEach((dataFilm) => this._renderFilm(this._sectionFilmsComponent.getMostCommentedContainerElement(), dataFilm));
+  }
+
+  /** Отрисовывает панель со списками фильмов или заглушку, если фильмов нет  */
+  _renderBoardFilms() {
+    this._renderSort();
+
+    if (this._getDataFilms().length === 0) {
+      this._renderNoFilms();
+      return;
+    }
+
+    this._dataTopRatedFilms = this._getDataFilms(SortType.RATING);
+
+    const dataFilms = (this._currentSortType === SortType.RATING) ?
+      this._dataTopRatedFilms : this._getDataFilms(this._currentSortType);
+
+    this._sectionFilmsComponent = new SectionFilmsView();
+
+    this._renderSectionFilms();
+    this._renderAllFilms(dataFilms, 0, this._renderedFilmCount);
+    this._renderButtomShowMore();
+    this._renderTopRatedFilms();
+    this._renderMostCommentedFilms();
+
+    this._sortComponent.setSortTypeChangeHandler(this._onSortTypeChange);
+  }
+
+  /** Отрисовывает попап */
+  _renderPopup(updateType) {
+    this._popupPresenter.init(
+      this._dataCurrentFilm,
+      this._getDataComments(),
+      this._onViewAction,
+      this._filterType,
+      updateType,
+    );
   }
 
   /** Очищает список фильмов заданной секции */
@@ -111,102 +237,45 @@ export default class MovieListPresenter {
     newMoviePresenters = null;
   }
 
-  /** Отрисовывает карточки в секции Top Reted */
-  _renderTopRatedFilms() {
-    this._dataTopRatedFilms = this._sortFilms(this._dataFilms, SortType.RATING);
-    const ratingFirstElement = this._dataTopRatedFilms[0].filmInfo.totalRating;
-
-    if (ratingFirstElement === 0) {
-      this._sectionFilmsComponent.isTopRatedFilms();
-      return;
-    }
-
-    this._dataTopRatedFilms.slice(0, FILM_COUNT_LIST_EXTRA)
-      .forEach((dataFilm) => this._renderFilm(this._sectionFilmsComponent.getTopRatedContainerElement(), dataFilm));
-  }
-
-  /** Отрисовывает карточки в секции Most Commented */
-  _renderMostCommentedFilms() {
-
-    if (this._dataMostCommentedFilms) {
-      this._clearSectionFilms(this._sectionFilmsComponent.getMostCommentedElement().id);
-    }
-
-
-    this._dataMostCommentedFilms = this._sortFilms(this._dataFilms, SortType.COUNT_COMMENTS);
-    const countCommentsFirstElement = this._dataMostCommentedFilms[0].comments.length;
-
-    this._sectionFilmsComponent.isMostCommentedFilms(countCommentsFirstElement);
-
-    if (countCommentsFirstElement === 0) {
-      return;
-    }
-
-    this._dataMostCommentedFilms.slice(0, FILM_COUNT_LIST_EXTRA)
-      .forEach((dataFilm) => this._renderFilm(this._sectionFilmsComponent.getMostCommentedContainerElement(), dataFilm));
-  }
-
-  /** Отрисовывает все списки фильмов */
-  _renderListFilms(sortType) {
-
-    this._dataFilms = (sortType === sortType.RATING) ?
-      this._dataTopRatedFilms : this._sortFilms(this._dataFilms, sortType);
-
-    this._renderAllFilms(this._dataFilms, 0, FILM_COUNT_PER_STEP);
-    this._renderButtomShowMore();
-    this._renderTopRatedFilms();
-    this._renderMostCommentedFilms(this._dataMostCommentedFilms);
-  }
-
   /** Очищает все списки фильмов */
-  _clearListFilms() {
-    this._moviePresenters.forEach((presenter) => presenter.destroy());
+  _clearBoardFilms({renderedFilmCount = false, resetSortType = false} = {}) {
+    if (this._statisticsComponent) {
+      removeComponent(this._statisticsComponent);
+      this._statisticsComponent = null;
 
-    this._moviePresenters = [];
-    this._renderedFilmCount = FILM_COUNT_PER_STEP;
-    removeComponent(this._buttonShowMoreComponent);
-  }
+    } else {
+      this._moviePresenters.forEach((presenter) => presenter.destroy());
+      this._moviePresenters = [];
 
-  /** Отрисовывает панель со списками фильмов или заглушку, если фильмов нет  */
-  _renderBoardFilms() {
+      removeComponent(this._sortComponent);
+      removeComponent(this._noFilmsComponent);
+      removeComponent(this._sectionFilmsComponent);
+      removeComponent(this._buttonShowMoreComponent);
 
-    if (this._dataFilms.length === 0) {
-      this._renderNoFilms();
-      return;
+      if (renderedFilmCount) {
+        this._renderedFilmCount = FILM_COUNT_PER_STEP;
+      }
+
+      if (resetSortType) {
+        this._currentSortType = SortType.DEFAULT;
+      }
     }
-
-    this._sectionFilmsComponent = new SectionFilmsView();
-
-    this._renderSectionFilms();
-    this._renderListFilms(SortType.DEFAULT);
-    this._sortComponent.setSortTypeChangeHandler(this._onSortTypeChange);
   }
 
-  /** Функция находит по id выбранной карточки данные фильма */
-  _getDataCurrentFilm() {
-    return this._dataFilms.find(
-      (dataFilm) => dataFilm.id === this._sectionFilmsComponent.getIdCardFilm(),
+  _sendDataFilmPopup(data) {
+    if (this._popupPresenter.getPopupComponent()) {
+      this._popupPresenter.setDataFilm(data);
+    }
+  }
+
+  _replaceCurrentCardsFilm(data) {
+    this._moviePresenters.forEach(
+      (presenter) => {
+        if (presenter.getId() === data.id) {
+          presenter.init(data);
+        }
+      },
     );
-  }
-
-  /** Отрисовывает попап */
-  _renderPopup() {
-    const dataFilm = this._getDataCurrentFilm();
-    this._popupPresenter.init(dataFilm, this._dataComments, this._onFilmChange, this._onCommentsChange);
-  }
-
-  /** Функция сортировки данных согласно выбранному типу сортировки */
-  _sortFilms(dataFilms, sortType) {
-    switch (sortType) {
-      case SortType.DATE:
-        return sortDate(dataFilms);
-      case SortType.RATING:
-        return sortTopRated(dataFilms);
-      case SortType.COUNT_COMMENTS:
-        return sortMostCommented(dataFilms);
-      case SortType.DEFAULT:
-        return this._sourceDataFilms.slice();
-    }
   }
 
   /** Обработчик сортировки */
@@ -216,47 +285,81 @@ export default class MovieListPresenter {
       return;
     }
 
-    this._clearListFilms();
-    this._renderListFilms(sortType);
     this._currentSortType = sortType;
+    this._clearBoardFilms({renderedFilmCount: true});
+    this._renderBoardFilms();
   }
 
   /** Обработчик кнопки Show More */
   _onButtomShowMoreClick() {
     this._renderAllFilms(
-      this._dataFilms,
+      this._getDataFilms(),
       this._renderedFilmCount, this._renderedFilmCount + FILM_COUNT_PER_STEP,
     );
 
     this._renderedFilmCount += FILM_COUNT_PER_STEP;
 
-    if (this._renderedFilmCount >= this._dataFilms.length) {
+    if (this._renderedFilmCount >= this._getDataFilms().length) {
       removeComponent(this._buttonShowMoreComponent);
     }
   }
 
   /** Обработчик клика по карточке фильма */
   _onCardFilmClick() {
+    this._dataCurrentFilm = this._getDataCurrentFilm();
     this._renderPopup();
   }
 
-  /** Обработчик изменений данных карточки фильма */
-  _onFilmChange(updatedFilm) {
-    this._popupPresenter.setDataFilm(updatedFilm);
-
-    this._dataFilms = updateItems(this._dataFilms, updatedFilm);
-
-    /** @type {Array} - Содержит все копии презентеров карточки фильма */
-    const moviePresenterCopies = this._moviePresenters
-      .filter((presenter) => presenter.getId() === updatedFilm.id);
-
-    moviePresenterCopies.forEach((presenter) => presenter.init(updatedFilm));
+  _onViewAction(actionType, updateType, update) {
+    switch (actionType) {
+      case UserAction.UPDATE_FILM:
+        this._moviesModel.updateDataFilms(updateType, update);
+        break;
+      case UserAction.ADD_COMMENT:
+        this._commentsModel.setDataComment(updateType, update);
+        //обновление this._moviesModel
+        //обновление this._commentsModel
+        break;
+      case UserAction.DELETE_COMMENT:
+        this._commentsModel.updateDataComments(updateType, update);
+        break;
+    }
   }
 
-  /** Обработчик изменений данных комментариев */
-  _onCommentsChange(idComment) {
-    this._dataComments = removeItemFromItems(this._dataComments, idComment);
-    this._popupPresenter.replaceComments();
-    this._renderMostCommentedFilms();
+  _onMoviesModelEvent(updateType, data) {
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this._sendDataFilmPopup(data);
+        this._replaceCurrentCardsFilm(data);
+        break;
+      case UpdateType.MINOR:
+        this._sendDataFilmPopup(data);
+        this._clearBoardFilms();
+        this._renderBoardFilms();
+        break;
+      case UpdateType.MAJOR:
+        this._clearBoardFilms({renderedFilmCount: true, resetSortType: true});
+        this._renderBoardFilms();
+        break;
+      case UpdateType.ADDITIONAL:
+        this._clearBoardFilms({renderedFilmCount: true, resetSortType: true});
+        this._statisticsComponent = new StatisticsView(this._getDataFilms(), this._filterPresenter.getCountCurrentFilter(FilterType.HISTORY));
+        render(this._listFilmsContainer, this._statisticsComponent);
+        break;
+    }
+  }
+
+  _onCommentsModelEvent(updateType) {
+    switch (updateType) {
+      case UpdateType.MINOR:
+        this._popupPresenter.replaceComments();
+        this._renderMostCommentedFilms();
+        break;
+      case UpdateType.MAJOR:
+        this._clearBoardFilms();
+        this._renderBoardFilms();
+        this._renderPopup(updateType);
+        break;
+    }
   }
 }
