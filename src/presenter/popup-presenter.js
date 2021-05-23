@@ -1,3 +1,6 @@
+
+import { api, FilterType, UserAction, UpdateType } from '../const.js';
+
 import { render, removeComponent, replaceComponent, RenderPosition } from '../utils/render.js';
 import { removeItemFromItems } from '../utils/remove-item.js';
 import { updateDataWatchlist, updateDataWatched, updateDataFavorite } from '../utils/button-controls.js';
@@ -5,8 +8,6 @@ import { updateDataWatchlist, updateDataWatched, updateDataFavorite } from '../u
 import PopupView from '../view/popup.js';
 import CommentsView from '../view/comments.js';
 import NewCommentView from '../view/new-comment.js';
-
-import { FilterType, UserAction, UpdateType } from '../const.js';
 
 
 export default class PopupPresenter {
@@ -27,15 +28,15 @@ export default class PopupPresenter {
     this._onClickDeleteComment = this._onClickDeleteComment.bind(this);
   }
 
-  init(dataFilm, dataComments, changeData, filterType, updateType) {
+  init(dataFilm, commentsModel, changeData, filterType, updateType) {
     this._dataFilm = dataFilm;
-    this._dataComments = dataComments.slice();
+    this._commentsModel = commentsModel;
     this._changeData = changeData;
     this._currentFilterType = filterType;
+    this._dataComments = null;
+
     let prevScrollTopPopup = null;
     let prevScrollLeftPopup = null;
-
-    const filmComments = this._getCommentsCurrentFilm(this._dataFilm);
 
     if (this._popupComponent) {
       prevScrollTopPopup = this._popupComponent.getElement().scrollTop;
@@ -43,13 +44,9 @@ export default class PopupPresenter {
       this._closePopup();
     }
 
-    this._commentsComponent = new CommentsView(filmComments);
-    this._newCommentComponent = new NewCommentView();
-    this._popupComponent = new PopupView(this._dataFilm);
-
     this._renderPopup();
 
-    if (updateType === UpdateType.MAJOR) {
+    if (updateType === UpdateType.MINOR) {
       this._popupComponent.getElement().scrollTop = prevScrollTopPopup;
       this._popupComponent.getElement().scrollLeft = prevScrollLeftPopup;
     }
@@ -63,16 +60,39 @@ export default class PopupPresenter {
     this._dataFilm = updatedFilm;
   }
 
-  replaceComments() {
+  _replaceComments() {
     const prevCommentsComponent = this._commentsComponent;
-    const filmComments = this._getCommentsCurrentFilm(this._dataFilm);
-
-    this._commentsComponent = new CommentsView(filmComments);
-
+    this._commentsComponent = new CommentsView(this._dataComments);
     this._commentsComponent.setClickDeleteHandler(this._onClickDeleteComment);
 
     replaceComponent(this._commentsComponent, prevCommentsComponent);
     removeComponent(prevCommentsComponent);
+  }
+
+  renderComments(updateType) {
+    if (updateType === UpdateType.MINOR) {
+      this._dataComments = this._commentsModel.getDataComments();
+      this._replaceComments(this._dataComments);
+      return;
+    }
+
+    api.getDataComments(this._dataFilm.id)
+      .then((dataComments) => {
+        if (this._commentsComponent === null) {
+          this._setDataComments(dataComments);
+          this._commentsComponent = new CommentsView(this._dataComments);
+          this._commentsComponent.setClickDeleteHandler(this._onClickDeleteComment);
+          render(
+            this._popupComponent.getElement().querySelector('.film-details__comments-wrap'),
+            this._commentsComponent,
+            RenderPosition.AFTERBEGIN,
+          );
+
+          return;
+        }
+        this._setDataComments(dataComments);
+        this._replaceComments(dataComments);
+      });
   }
 
   replaceNewComment() {
@@ -82,39 +102,31 @@ export default class PopupPresenter {
     removeComponent(prevNewCommentComponent);
   }
 
-  /**
-   * Функция отбирает комментарии для выбранного фильма из общего массива комментариев
-   * @param {Array} data - массив id комментариев из dataFilms
-   * @returns {Array} - возвращает массив комментариев выбранного фильма
-   */
-  _getCommentsCurrentFilm(dataFilm) {
-    const { comments } = dataFilm;
-    return comments.map((idComment) => this._dataComments.find((dataComment) => dataComment.id === idComment));
-  }
-
   _getUpdateType(filterTypeButton) {
     return this._currentFilterType === filterTypeButton ?
       UpdateType.MINOR : UpdateType.PATCH;
   }
 
-  _renderPopup() {
-    this._popupContainer.classList.add('hide-overflow');
+  _setDataComments(dataComments) {
+    this._commentsModel.setDataComments(dataComments);
+    this._dataComments = this._commentsModel.getDataComments();
+  }
 
+  _renderPopup() {
+    this._newCommentComponent = new NewCommentView();
+    this._popupComponent = new PopupView(this._dataFilm);
+
+    this._popupContainer.classList.add('hide-overflow');
     this._popupComponent.setWatchlistChangeHandler(this._onWatchlistChange);
     this._popupComponent.setWatchedChangeHandler(this._onWatchedChange);
     this._popupComponent.setFavoriteChangeHandler(this._onFavoriteChange);
-    this._commentsComponent.setClickDeleteHandler(this._onClickDeleteComment);
     this._popupComponent.setCloseClickHandler(this._onCloseButtonClick);
 
     document.addEventListener('keydown', this._onEscKeyDown);
     document.addEventListener('keydown', this._onCtrlEnterKeyDown);
 
     render(this._popupContainer, this._popupComponent);
-    render(
-      this._popupComponent.getElement().querySelector('.film-details__comments-wrap'),
-      this._commentsComponent,
-      RenderPosition.AFTERBEGIN,
-    );
+    this.renderComments();
     render(this._popupComponent.getElement().querySelector('.film-details__comments-wrap'),
       this._newCommentComponent);
   }
@@ -127,6 +139,7 @@ export default class PopupPresenter {
     document.removeEventListener('keydown', this._onEscKeyDown);
     document.removeEventListener('keydown', this._onCtrlEnterKeyDown);
     this._popupComponent = null;
+    this._commentsComponent = null;
   }
 
   _onCloseButtonClick() {
@@ -143,7 +156,8 @@ export default class PopupPresenter {
     if (evt.ctrlKey && evt.key === 'enter' || evt.key === 'Enter') {
       this._changeData(
         UserAction.ADD_COMMENT,
-        UpdateType.MAJOR,
+        UpdateType.MINOR,
+        this._dataFilm.id,
         this._newCommentComponent.getData(),
       );
       this.replaceNewComment();
@@ -182,14 +196,9 @@ export default class PopupPresenter {
     updatedFilm.comments = removeItemFromItems(this._dataFilm.comments, idCommentToDelete);
 
     this._changeData(
-      UserAction.UPDATE_FILM,
+      UserAction.DELETE_COMMENT,
       UpdateType.PATCH,
       updatedFilm,
-    );
-
-    this._changeData(
-      UserAction.DELETE_COMMENT,
-      UpdateType.MINOR,
       idCommentToDelete,
     );
   }

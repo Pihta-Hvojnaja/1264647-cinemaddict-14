@@ -24,12 +24,14 @@ export default class FilterPresenter {
   }
 
   init() {
+    this._countFilms = null;
     this._filters = this._getFilters();
+
     const prevProfileComponent = this._profileComponent;
     const prevFilterComponent = this._filterComponent;
 
     this._profileComponent = new ProfileView(this.getCountCurrentFilter(FilterType.HISTORY));
-    this._filterComponent = new SiteFilterView(this._filters, this._filterModel.getFilter());
+    this._filterComponent = new SiteFilterView(this._filters, this._filterModel.getFilter(), this._countFilms);
     this._filterComponent.setFilterTypeChangeHandler(this._onFilterTypeChange);
 
     if (prevProfileComponent === null || prevFilterComponent === null) {
@@ -50,6 +52,7 @@ export default class FilterPresenter {
 
   _getFilters() {
     const dataFilms = this._moviesModal.getDataFilms();
+    this._countFilms = dataFilms.length;
 
     return [
       {

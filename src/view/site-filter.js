@@ -37,9 +37,10 @@ const createSiteFilterTemplate = (filters, currentFilterType) => {
 
 
 export default class SiteFilter extends AbstractView {
-  constructor(filters, currentFilterType) {
+  constructor(filters, currentFilterType, countFilms) {
     super();
     this._filters = filters;
+    this._countFilms = countFilms;
     this._currentFilterType = currentFilterType;
 
     this._filterTypeChangeHandler = this._filterTypeChangeHandler.bind(this);
@@ -50,6 +51,11 @@ export default class SiteFilter extends AbstractView {
   }
 
   setFilterTypeChangeHandler(callback) {
+
+    if (this._countFilms === 0) {
+      return;
+    }
+
     this._callback.filterTypeChange = callback;
     this.getElement().addEventListener('click', this._filterTypeChangeHandler);
   }

@@ -1,8 +1,6 @@
 
-import { render } from './utils/render.js';
-
-import { generateDataFilm } from './mock/data-film.js';
-import { generateDataComments } from './mock/data-comments.js';
+import { api,  UpdateType } from './const.js';
+import { render, replaceComponent } from './utils/render.js';
 
 import FooterStatisticsView from './view/footer-statistics.js';
 
@@ -13,41 +11,16 @@ import CommentsModel from './model/comments-model.js';
 import FilterPresenter from './presenter/filter-presenter.js';
 import MovieListPresenter from './presenter/movie-list-presenter.js';
 
-
-/* VARIABLE
-   ========================================================================== */
-
-const FILM_COUNT = 20;
-
 const bodyElement = document.querySelector('body');
 const headerSiteElement = bodyElement.querySelector('.header');
 const mainSiteElement = bodyElement.querySelector('.main');
 const footerStatisticsElement = bodyElement.querySelector('.footer__statistics');
 
-
-/* DATA
-   ========================================================================== */
-
-const dataFilms = new Array(FILM_COUNT).fill().map(generateDataFilm);
 const filterModel = new FilterModel();
 const moviesModel = new MoviesModel();
-moviesModel.setDataFilms(dataFilms);
-
-const dataComments = generateDataComments();
 const commentsModel = new CommentsModel();
-commentsModel.setDataComments(dataComments);
-
-
-/* FILTER
-   ========================================================================== */
 
 const filterPresenter = new FilterPresenter(headerSiteElement, mainSiteElement, filterModel, moviesModel);
-filterPresenter.init();
-
-
-/* BOARD FILMS
-   ========================================================================== */
-
 const movieListPresenter = new MovieListPresenter(
   mainSiteElement,
   bodyElement,
@@ -57,10 +30,17 @@ const movieListPresenter = new MovieListPresenter(
   filterPresenter,
 );
 
+filterPresenter.init();
 movieListPresenter.init();
 
+const footerStatisticsComponent = new FooterStatisticsView(moviesModel.getDataFilms());
+render(footerStatisticsElement, footerStatisticsComponent);
 
-/* FOOTER
-   ========================================================================== */
-
-render(footerStatisticsElement, new FooterStatisticsView(moviesModel.getDataFilms()));
+api.getDataFilms()
+  .then((dataFilms) => {
+    moviesModel.setDataFilms(UpdateType.INIT, dataFilms);
+    replaceComponent(new FooterStatisticsView(moviesModel.getDataFilms()), footerStatisticsComponent);
+  })
+  .catch(() => {
+    moviesModel.setDataFilms(UpdateType.INIT, []);
+  });

@@ -10,7 +10,7 @@ const NUMBER_ITEMS_DELETE = 1;
 export const removeItemFromItems = (items, idComment) => {
 
   const index = items.findIndex(
-    (item) => (typeof item === 'object') ? item.id === idComment : item === idComment,
+    (item) => (typeof item === 'object') ? String(item.id) === String(idComment) : String(item) === String(idComment),
   );
 
   if (index === -1) {

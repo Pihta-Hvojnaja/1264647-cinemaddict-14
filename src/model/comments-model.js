@@ -14,6 +14,10 @@ export default class CommentsModel extends Observer {
     return this._dataComments;
   }
 
+  getDataComment() {
+    return this._dataComment;
+  }
+
   setDataComments(dataComments) {
     this._dataComments = dataComments.slice();
   }
@@ -26,5 +30,14 @@ export default class CommentsModel extends Observer {
   updateDataComments(updateType, idComment) {
     this._dataComments = removeItemFromItems(this._dataComments, idComment);
     this._notify(updateType);
+  }
+
+  addComment(updateType, update) {
+    this._dataComments = [
+      ...this._dataComments,
+      update,
+    ];
+
+    this._notify(updateType, update);
   }
 }
