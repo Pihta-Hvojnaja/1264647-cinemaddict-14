@@ -3,7 +3,7 @@ import { filter } from '../utils/filter.js';
 import { render, removeComponent } from '../utils/render.js';
 import { sortDate, sortTopRated, sortMostCommented } from '../utils/sort-data.js';
 
-import { api, FilterType, SortType, UpdateType, UserAction } from '../const.js';
+import { FilterType, SortType, UpdateType, UserAction } from '../const.js';
 
 import SortView from '../view/sort.js';
 import LoadingView from '../view/loading.js';
@@ -13,7 +13,7 @@ import ButtonShowMoreView from '../view/button-show-more.js';
 import StatisticsView from '../view/statistics.js';
 
 import MoviePresenter from './movie-presenter.js';
-import PopupPresenter from './popup-presenter.js';
+import PopupPresenter, {State as MoviePresenterViewState} from './popup-presenter.js';
 
 
 const FILM_COUNT_PER_STEP = 5;
@@ -28,19 +28,19 @@ export default class MovieListPresenter {
     moviesModel,
     commentsModel,
     filterModel,
-    filterPresenter) {
+    filterPresenter,
+    api) {
 
-    this._dataCurrentFilm = null;
-
+    this._listFilmsContainer = listFilmsContainer;
+    this._popupContainer = popupContainer;
     this._moviesModel = moviesModel;
     this._commentsModel = commentsModel;
     this._filterModel = filterModel;
     this._filterPresenter = filterPresenter;
-
-    this._listFilmsContainer = listFilmsContainer;
-    this._popupContainer = popupContainer;
+    this._api = api;
 
     this._isLoading = true;
+    this._dataCurrentFilm = null;
 
     this._renderedFilmCount = FILM_COUNT_PER_STEP;
     this._currentSortType = SortType.DEFAULT;
@@ -52,7 +52,7 @@ export default class MovieListPresenter {
     this._buttonShowMoreComponent = null;
     this._statisticsComponent = null;
 
-    this._popupPresenter = new PopupPresenter(this._popupContainer);
+    this._popupPresenter = new PopupPresenter(this._popupContainer, this._api);
     this._moviePresenters = [];
 
     this._onSortTypeChange = this._onSortTypeChange.bind(this);
@@ -208,13 +208,12 @@ export default class MovieListPresenter {
     this._sortComponent.setSortTypeChangeHandler(this._onSortTypeChange);
   }
 
-  _renderPopup(updateType) {
+  _renderPopup() {
     this._popupPresenter.init(
       this._dataCurrentFilm,
       this._commentsModel,
       this._onViewAction,
       this._filterType,
-      updateType,
     );
   }
 
@@ -306,30 +305,39 @@ export default class MovieListPresenter {
   _onViewAction(actionType, updateType, updateDataFilm, updateDataComment) {
     switch (actionType) {
       case UserAction.UPDATE_FILM:
-        api.updateDataFilm(updateDataFilm)
-          .then(() => this._moviesModel.updateDataFilms(updateType, updateDataFilm));
+        this._api.updateDataFilm(updateDataFilm)
+          .then(() => this._moviesModel.updateDataFilms(updateDataFilm, updateType));
         break;
       case UserAction.ADD_COMMENT:
-        api.addDataComment(updateDataFilm, updateDataComment)
+        this._popupPresenter.setViewState(MoviePresenterViewState.ADD_COMMENT);
+
+        this._api.addDataComment(updateDataFilm, updateDataComment)
           .then((response) => {
-            this._commentsModel.setDataComment(updateType, response.comments);
-            this._moviesModel.updateDataFilms(updateType, response.movie);
-          });
+            this._commentsModel.setDataComments(response.comments, updateType);
+            this._moviesModel.updateDataFilms(response.movie, updateType);
+            this._popupPresenter.setViewState(MoviePresenterViewState.RESTART_NEW_COMMENT);
+          })
+          .catch(() => this._popupPresenter.setViewState(MoviePresenterViewState.ABORTING));
+
         break;
       case UserAction.DELETE_COMMENT:
-        api.updateDataFilm(updateDataFilm)
+        this._api.deleteDataComment(updateDataComment)
           .then(() => {
-            this._moviesModel.updateDataFilms(updateType, updateDataFilm);
-
-            api.deleteDataComment(updateDataComment)
-              .then(() => this._commentsModel.updateDataComments(updateType, updateDataComment));
-          });
+            this._moviesModel.updateDataFilms(updateDataFilm, updateType);
+            this._commentsModel.updateDataComments(updateDataComment, updateType);
+          })
+          .catch(() => this._popupPresenter.setViewState(MoviePresenterViewState.DELETE_COMMENT));
         break;
     }
   }
 
   _onMoviesModelEvent(updateType, data) {
     switch (updateType) {
+      case UpdateType.INIT:
+        this._isLoading = false;
+        removeComponent(this._loadingComponent);
+        this._renderBoardFilms();
+        break;
       case UpdateType.PATCH:
         this._sendDataFilmPopup(data);
         this._replaceCurrentCardsFilm(data);
@@ -348,11 +356,6 @@ export default class MovieListPresenter {
         this._statisticsComponent = new StatisticsView(this._getDataFilms(), this._filterPresenter.getCountCurrentFilter(FilterType.HISTORY));
         render(this._listFilmsContainer, this._statisticsComponent);
         break;
-      case UpdateType.INIT:
-        this._isLoading = false;
-        removeComponent(this._loadingComponent);
-        this._renderBoardFilms();
-        break;
     }
   }
 
@@ -361,11 +364,6 @@ export default class MovieListPresenter {
       case UpdateType.PATCH:
         this._popupPresenter.renderComments(updateType);
         this._renderMostCommentedFilms();
-        break;
-      case UpdateType.MINOR:
-        this._clearBoardFilms();
-        this._renderBoardFilms();
-        this._renderPopup(updateType);
         break;
     }
   }

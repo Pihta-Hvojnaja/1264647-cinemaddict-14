@@ -11,13 +11,13 @@ export default class MoviesModel extends Observer {
     return this._dataFilms;
   }
 
-  setDataFilms(updateType, dataFilms) {
+  setDataFilms(dataFilms, updateType) {
     this._dataFilms = dataFilms.slice();
 
     this._notify(updateType);
   }
 
-  updateDataFilms(updateType, updateDataFilm) {
+  updateDataFilms(updateDataFilm, updateType) {
     const index = this._dataFilms.findIndex((dataFilm) => dataFilm.id === updateDataFilm.id);
 
     if (index === -1) {

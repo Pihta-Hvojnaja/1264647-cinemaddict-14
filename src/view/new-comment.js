@@ -27,32 +27,35 @@ const getStatusRadioButton = (currentEmotion, emotionType) => {
   return currentEmotion === emotionType ? 'checked' : '';
 };
 
+const getStateInput = (isDisabled) => {
+  return isDisabled ? 'disabled' : '';
+};
 
 const createNewCommentTemplate = (dataComent) => {
 
-  const { comment, emotion } = dataComent;
+  const { comment, emotion, isDisabled } = dataComent;
 
   return `<div class="film-details__new-comment">
             <div class="film-details__add-emoji-label">
               ${getImgEmotion(emotion)}
             </div>
             <label class="film-details__comment-label">
-              <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment">${he.encode(comment)}</textarea>
+              <textarea ${getStateInput(isDisabled)} class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment">${he.encode(comment)}</textarea>
             </label>
             <div class="film-details__emoji-list">
               <input ${getStatusRadioButton(emotion, EmotionType.SMILE)} class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-smile" value="smile">
               <label class="film-details__emoji-label" for="emoji-smile">
                 <img src="./images/emoji/smile.png" width="30" height="30" alt="emoji">
               </label>
-              <input ${getStatusRadioButton(emotion, EmotionType.SLEEPING)} class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-sleeping" value="sleeping">
+              <input ${getStateInput(isDisabled)} ${getStatusRadioButton(emotion, EmotionType.SLEEPING)} class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-sleeping" value="sleeping">
               <label class="film-details__emoji-label" for="emoji-sleeping">
                 <img src="./images/emoji/sleeping.png" width="30" height="30" alt="emoji">
               </label>
-              <input ${getStatusRadioButton(emotion, EmotionType.PUKE)} class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-puke" value="puke">
+              <input ${getStateInput(isDisabled)} ${getStatusRadioButton(emotion, EmotionType.PUKE)} class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-puke" value="puke">
               <label class="film-details__emoji-label" for="emoji-puke">
                 <img src="./images/emoji/puke.png" width="30" height="30" alt="emoji">
               </label>
-              <input ${getStatusRadioButton(emotion, EmotionType.ANGRY)} class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-angry" value="angry">
+              <input ${getStateInput(isDisabled)} ${getStatusRadioButton(emotion, EmotionType.ANGRY)} class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-angry" value="angry">
               <label class="film-details__emoji-label" for="emoji-angry">
                 <img src="./images/emoji/angry.png" width="30" height="30" alt="emoji">
               </label>
@@ -66,6 +69,7 @@ export default class NewComment extends SmartView {
     this._data = {
       comment: '',
       emotion: '',
+      isDisabled: false,
     };
 
     this._commentInputElement = this.getElement().querySelector('.film-details__comment-input');
@@ -82,7 +86,17 @@ export default class NewComment extends SmartView {
   }
 
   getData() {
-    return this._data;
+    return NewComment.parseDataForServer(this._data);
+  }
+
+  updateElement() {
+    const prevElement = this.getElement();
+    const parent = prevElement.parentElement;
+    this.removeElement();
+    const newElement = this.getElement();
+    parent.replaceChild(newElement, prevElement);
+    this._returnScrollTextArea();
+    this.restoreHandlers();
   }
 
   restoreHandlers() {
@@ -92,6 +106,11 @@ export default class NewComment extends SmartView {
 
   _setCommentHandlers() {
     this._commentInputElement.addEventListener('input', this._commentTextareaInputHandler);
+  }
+
+  _returnScrollTextArea() {
+    this._commentInputElement = this.getElement().querySelector('.film-details__comment-input');
+    this._commentInputElement.scrollTop = this._commentInputElement.scrollHeight;
   }
 
   _setCommentEmojiHandlers() {
@@ -113,11 +132,13 @@ export default class NewComment extends SmartView {
       emotion: evt.target.value,
     });
 
-    this._commentInputElement = this.getElement().querySelector('.film-details__comment-input');
-
-    /** Возвращаем скролл textarea вниз */
-    this._commentInputElement.scrollTop = this._commentInputElement.scrollHeight;
-
+    this._returnScrollTextArea();
     this.restoreHandlers();
+  }
+
+  static parseDataForServer(data) {
+    delete data.isDisabled;
+
+    return data;
   }
 }

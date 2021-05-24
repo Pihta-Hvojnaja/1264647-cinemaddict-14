@@ -1,5 +1,5 @@
 
-import { api,  UpdateType } from './const.js';
+import { UpdateType } from './const.js';
 import { render, replaceComponent } from './utils/render.js';
 
 import FooterStatisticsView from './view/footer-statistics.js';
@@ -10,6 +10,13 @@ import CommentsModel from './model/comments-model.js';
 
 import FilterPresenter from './presenter/filter-presenter.js';
 import MovieListPresenter from './presenter/movie-list-presenter.js';
+
+import Api from './api.js';
+
+const AUTHORIZATION = 'Basic userPihta_4';
+const END_POINT = 'https://14.ecmascript.pages.academy/cinemaddict';
+
+const api = new Api(END_POINT, AUTHORIZATION);
 
 const bodyElement = document.querySelector('body');
 const headerSiteElement = bodyElement.querySelector('.header');
@@ -28,6 +35,7 @@ const movieListPresenter = new MovieListPresenter(
   commentsModel,
   filterModel,
   filterPresenter,
+  api,
 );
 
 filterPresenter.init();
@@ -38,9 +46,9 @@ render(footerStatisticsElement, footerStatisticsComponent);
 
 api.getDataFilms()
   .then((dataFilms) => {
-    moviesModel.setDataFilms(UpdateType.INIT, dataFilms);
+    moviesModel.setDataFilms(dataFilms, UpdateType.INIT);
     replaceComponent(new FooterStatisticsView(moviesModel.getDataFilms()), footerStatisticsComponent);
   })
   .catch(() => {
-    moviesModel.setDataFilms(UpdateType.INIT, []);
+    moviesModel.setDataFilms([], UpdateType.INIT);
   });

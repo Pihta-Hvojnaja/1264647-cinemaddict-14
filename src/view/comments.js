@@ -5,6 +5,10 @@ import AbstractView from './abstract.js';
 
 dayjs.extend(relativeTime);
 
+const StatusButton = {
+  DELETE: 'Delete',
+  DELETING: 'Deleting...',
+};
 
 /**
  * Функция возвращает готовые комментарии
@@ -61,7 +65,8 @@ export default class Comments extends AbstractView {
     super();
     this._filmComments = filmComments;
     this._clickDeleteHandler = this._clickDeleteHandler.bind(this);
-    this._idCommentElementToDelete = null;
+    this._commentToDeleteElement = null;
+    this._buttonDeleteCommentElement = null;
   }
 
   getTemplate() {
@@ -69,18 +74,29 @@ export default class Comments extends AbstractView {
   }
 
   getIdCommentToDelete() {
-    return this._idCommentElementToDelete;
+    return this._commentToDeleteElement.id;
   }
 
   setClickDeleteHandler(callback) {
     this._callback.click = callback;
 
-    this.getElement().querySelector('.film-details__comments-list').addEventListener('click', this._clickDeleteHandler);
+    this.getElement().querySelector('.film-details__comments-list')
+      .addEventListener('click', this._clickDeleteHandler);
+  }
+
+  changeStatusButtonDeleteComment(status = StatusButton.DELETE) {
+    this._buttonDeleteCommentElement.textContent = status;
+    this._buttonDeleteCommentElement.disabled = !this._buttonDeleteCommentElement.disabled;
   }
 
   _clickDeleteHandler(evt) {
     evt.preventDefault();
-    this._idCommentElementToDelete = parseInt(evt.target.closest('.film-details__comment').id);
-    this._callback.click();
+
+    if (evt.target.className === 'film-details__comment-delete') {
+      this._commentToDeleteElement = evt.target.closest('.film-details__comment');
+      this._buttonDeleteCommentElement = this._commentToDeleteElement.querySelector('.film-details__comment-delete');
+      this.changeStatusButtonDeleteComment(StatusButton.DELETING);
+      this._callback.click();
+    }
   }
 }

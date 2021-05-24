@@ -1,12 +1,5 @@
 
-import Api from './api.js';
-
-export const AUTHORIZATION = 'Basic userPihta_4';
-export const END_POINT = 'https://14.ecmascript.pages.academy/cinemaddict';
 export const ONE_HOUR = 60;
-
-export const api = new Api(END_POINT, AUTHORIZATION);
-
 
 /**
  * @type {Object} - перечисление с типами эмоций
