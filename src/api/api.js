@@ -1,5 +1,5 @@
 
-import MoviesModel from './model/movies-model.js';
+import MoviesModel from '../model/movies-model.js';
 
 const Method = {
   GET: 'GET',
@@ -63,6 +63,16 @@ export default class Api {
           comments: response.comments,
         };
       });
+  }
+
+  sync(data) {
+    return this._load({
+      url: 'movies/sync',
+      method: Method.POST,
+      body: JSON.stringify(data),
+      headers: new Headers({'Content-Type': 'application/json'}),
+    })
+      .then(Api.toJSON);
   }
 
   _load({

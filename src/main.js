@@ -1,6 +1,7 @@
 
 import { UpdateType } from './const.js';
 import { render, replaceComponent } from './utils/render.js';
+import { toast } from './utils/toast.js';
 
 import FooterStatisticsView from './view/footer-statistics.js';
 
@@ -11,12 +12,27 @@ import CommentsModel from './model/comments-model.js';
 import FilterPresenter from './presenter/filter-presenter.js';
 import MovieListPresenter from './presenter/movie-list-presenter.js';
 
-import Api from './api.js';
+import Api from './api/api.js';
+import Store from './api/store.js';
+import Provider from './api/provider.js';
+
 
 const AUTHORIZATION = 'Basic userPihta_4';
 const END_POINT = 'https://14.ecmascript.pages.academy/cinemaddict';
 
+const STORE_FILMS_PREFIX = 'taskmanager-localstorage-films';
+const STORE_FILMS_VER = 'v14';
+
+const STORE_COMMENTS_PREFIX = 'taskmanager-localstorage-comments';
+const STORE_COMMENTS_VER = 'v14';
+
+const STORE_FILMS_NAME = `${STORE_FILMS_PREFIX}-${STORE_FILMS_VER}`;
+const STORE_COMMENTS_NAME = `${STORE_COMMENTS_PREFIX}-${STORE_COMMENTS_VER}`;
+
 const api = new Api(END_POINT, AUTHORIZATION);
+
+const store = new Store(window.localStorage);
+const apiWithProvider = new Provider(api, store, STORE_FILMS_NAME, STORE_COMMENTS_NAME);
 
 const bodyElement = document.querySelector('body');
 const headerSiteElement = bodyElement.querySelector('.header');
@@ -35,7 +51,7 @@ const movieListPresenter = new MovieListPresenter(
   commentsModel,
   filterModel,
   filterPresenter,
-  api,
+  apiWithProvider,
 );
 
 filterPresenter.init();
@@ -44,7 +60,7 @@ movieListPresenter.init();
 const footerStatisticsComponent = new FooterStatisticsView(moviesModel.getDataFilms());
 render(footerStatisticsElement, footerStatisticsComponent);
 
-api.getDataFilms()
+apiWithProvider.getDataFilms()
   .then((dataFilms) => {
     moviesModel.setDataFilms(dataFilms, UpdateType.INIT);
     replaceComponent(new FooterStatisticsView(moviesModel.getDataFilms()), footerStatisticsComponent);
@@ -52,3 +68,17 @@ api.getDataFilms()
   .catch(() => {
     moviesModel.setDataFilms([], UpdateType.INIT);
   });
+
+window.addEventListener('load', () => {
+  navigator.serviceWorker.register('/sw.js');
+});
+
+window.addEventListener('online', () => {
+  document.title = document.title.replace(' [offline]', '');
+  apiWithProvider.sync();
+});
+
+window.addEventListener('offline', () => {
+  document.title += ' [offline]';
+  toast('Приложение перешло в режим оффлайн');
+});

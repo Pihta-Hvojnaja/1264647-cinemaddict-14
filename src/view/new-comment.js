@@ -27,9 +27,11 @@ const getStatusRadioButton = (currentEmotion, emotionType) => {
   return currentEmotion === emotionType ? 'checked' : '';
 };
 
+
 const getStateInput = (isDisabled) => {
   return isDisabled ? 'disabled' : '';
 };
+
 
 const createNewCommentTemplate = (dataComent) => {
 

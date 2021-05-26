@@ -317,11 +317,13 @@ export default class MovieListPresenter {
             this._moviesModel.updateDataFilms(response.movie, updateType);
             this._popupPresenter.setViewState(MoviePresenterViewState.RESTART_NEW_COMMENT);
           })
-          .catch(() => this._popupPresenter.setViewState(MoviePresenterViewState.ABORTING));
+          .catch(() => {
+            this._popupPresenter.setViewState(MoviePresenterViewState.ABORTING);
+          });
 
         break;
       case UserAction.DELETE_COMMENT:
-        this._api.deleteDataComment(updateDataComment)
+        this._api.deleteDataComment(updateDataComment, updateDataFilm.id)
           .then(() => {
             this._moviesModel.updateDataFilms(updateDataFilm, updateType);
             this._commentsModel.updateDataComments(updateDataComment, updateType);
