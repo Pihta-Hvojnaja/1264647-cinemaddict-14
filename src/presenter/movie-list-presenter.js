@@ -57,6 +57,7 @@ export default class MovieListPresenter {
     this._popupPresenter = new PopupPresenter(this._popupContainer, this._api);
     this._moviePresenters = [];
 
+    this._replacePopup = this._replacePopup.bind(this);
     this._onSortTypeChange = this._onSortTypeChange.bind(this);
     this._onCardFilmClick = this._onCardFilmClick.bind(this);
     this._onButtomShowMoreClick = this._onButtomShowMoreClick.bind(this);
@@ -130,6 +131,7 @@ export default class MovieListPresenter {
   _renderFilm(container, dataFilm) {
     const moviePresenter = new MoviePresenter(container, this._onViewAction, this._filterType);
     moviePresenter.init(dataFilm);
+    moviePresenter.replacePopup(this._replacePopup);
     this._moviePresenters.push(moviePresenter);
   }
 
@@ -210,13 +212,21 @@ export default class MovieListPresenter {
     this._sortComponent.setSortTypeChangeHandler(this._onSortTypeChange);
   }
 
-  _renderPopup() {
+  _renderPopup(updateType = null) {
     this._popupPresenter.init(
       this._dataCurrentFilm,
       this._commentsModel,
       this._onViewAction,
       this._filterType,
+      updateType,
     );
+  }
+
+  _replacePopup(datafilm) {
+    if (this._popupPresenter.getPopupComponent()) {
+      this._dataCurrentFilm = datafilm;
+      this._renderPopup(UpdateType.PATCH);
+    }
   }
 
   _clearSectionFilms(idSectionFilm) {

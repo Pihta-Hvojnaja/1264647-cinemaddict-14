@@ -16,6 +16,7 @@ export default class MoviePresenter {
 
     this._currentFilterType = filterType;
 
+    this._replacePopup = null;
     this._cardFilmComponent = null;
 
     this._onWatchlistClick = this._onWatchlistClick.bind(this);
@@ -55,33 +56,49 @@ export default class MoviePresenter {
     removeComponent(this._cardFilmComponent);
   }
 
+  replacePopup(callback) {
+    this._replacePopup = callback;
+  }
+
   _getUpdateType(filterTypeButton) {
     return this._currentFilterType === filterTypeButton ?
       UpdateType.MINOR : UpdateType.PATCH;
   }
 
   _onWatchlistClick() {
+    const updateData = updateDataWatchlist(this._dataFilm);
+
     this._changeData(
       UserAction.UPDATE_FILM,
       this._getUpdateType(FilterType.WATCHLIST),
-      updateDataWatchlist(this._dataFilm),
+      updateData,
     );
+
+    this._replacePopup(updateData);
   }
 
   _onWatchedClick() {
+    const updateData = updateDataWatched(this._dataFilm);
+
     this._changeData(
       UserAction.UPDATE_FILM,
       this._getUpdateType(FilterType.HISTORY),
-      updateDataWatched(this._dataFilm),
+      updateData,
     );
+
+    this._replacePopup(updateData);
   }
 
   _onFavoriteClick() {
+    const updateData = updateDataFavorite(this._dataFilm);
+
     this._changeData(
       UserAction.UPDATE_FILM,
       this._getUpdateType(FilterType.FAVORITES),
-      updateDataFavorite(this._dataFilm),
+      updateData,
     );
+
+    this._replacePopup(updateData);
   }
 }
 

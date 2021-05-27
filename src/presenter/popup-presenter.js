@@ -37,18 +37,28 @@ export default class PopupPresenter {
     this._onClickDeleteComment = this._onClickDeleteComment.bind(this);
   }
 
-  init(dataFilm, commentsModel, changeData, filterType) {
+  init(dataFilm, commentsModel, changeData, filterType, updateType) {
     this._dataFilm = dataFilm;
     this._commentsModel = commentsModel;
     this._changeData = changeData;
     this._currentFilterType = filterType;
     this._dataComments = null;
 
+    let prevScrollTopPopup = null;
+    let prevScrollLeftPopup = null;
+
     if (this._popupComponent) {
+      prevScrollTopPopup = this._popupComponent.getElement().scrollTop;
+      prevScrollLeftPopup = this._popupComponent.getElement().scrollLeft;
       this._closePopup();
     }
 
     this._renderPopup();
+
+    if (updateType) {
+      this._popupComponent.getElement().scrollTop = prevScrollTopPopup;
+      this._popupComponent.getElement().scrollLeft = prevScrollLeftPopup;
+    }
   }
 
   getPopupComponent() {
