@@ -75,6 +75,7 @@ window.addEventListener('load', () => {
 
 window.addEventListener('online', () => {
   document.title = document.title.replace(' [offline]', '');
+  toast('Доступ к сети восстановлен', true);
   apiWithProvider.sync();
 });
 

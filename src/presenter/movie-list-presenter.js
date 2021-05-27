@@ -223,7 +223,9 @@ export default class MovieListPresenter {
   }
 
   _replacePopup(datafilm) {
-    if (this._popupPresenter.getPopupComponent()) {
+    if (this._popupPresenter.getPopupComponent() &&
+          this._dataCurrentFilm.id === datafilm.id) {
+
       this._dataCurrentFilm = datafilm;
       this._renderPopup(UpdateType.PATCH);
     }
