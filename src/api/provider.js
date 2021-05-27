@@ -33,7 +33,7 @@ export default class Provider {
         });
     }
 
-    const storeDataFilms = Object.values(this._store.getItems(this._storeKeyDataFilms));
+    const storeDataFilms = this._getStoreDataFilms();
 
     return Promise.resolve(storeDataFilms.map(MoviesModel.adaptToClient));
   }
@@ -51,6 +51,11 @@ export default class Provider {
 
     if (storeDataComments) {
       return Promise.resolve(storeDataComments);
+    }
+
+    const countComments = this._getStoreDataFilms()[movieId].comments.length;
+    if (countComments === 0) {
+      return Promise.resolve([]);
     }
 
     return Promise.reject(new Error('Get comments failed'));
@@ -108,5 +113,9 @@ export default class Provider {
     }
 
     return Promise.reject(new Error('Sync data failed'));
+  }
+
+  _getStoreDataFilms() {
+    return Object.values(this._store.getItems(this._storeKeyDataFilms));
   }
 }

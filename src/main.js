@@ -20,10 +20,10 @@ import Provider from './api/provider.js';
 const AUTHORIZATION = 'Basic userPihta_4';
 const END_POINT = 'https://14.ecmascript.pages.academy/cinemaddict';
 
-const STORE_FILMS_PREFIX = 'taskmanager-localstorage-films';
+const STORE_FILMS_PREFIX = 'cinemaddict-localstorage-films';
 const STORE_FILMS_VER = 'v14';
 
-const STORE_COMMENTS_PREFIX = 'taskmanager-localstorage-comments';
+const STORE_COMMENTS_PREFIX = 'cinemaddict-localstorage-comments';
 const STORE_COMMENTS_VER = 'v14';
 
 const STORE_FILMS_NAME = `${STORE_FILMS_PREFIX}-${STORE_FILMS_VER}`;

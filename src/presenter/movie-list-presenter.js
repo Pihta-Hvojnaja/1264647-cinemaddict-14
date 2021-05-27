@@ -2,6 +2,8 @@
 import { filter } from '../utils/filter.js';
 import { render, removeComponent } from '../utils/render.js';
 import { sortDate, sortTopRated, sortMostCommented } from '../utils/sort-data.js';
+import { isOnline } from '../utils/is-online.js';
+import { toast } from '../utils/toast.js';
 
 import { FilterType, SortType, UpdateType, UserAction } from '../const.js';
 
@@ -309,8 +311,10 @@ export default class MovieListPresenter {
           .then(() => this._moviesModel.updateDataFilms(updateDataFilm, updateType));
         break;
       case UserAction.ADD_COMMENT:
+        if (!isOnline()) {
+          toast('You can\'t delete comment offline');
+        }
         this._popupPresenter.setViewState(MoviePresenterViewState.ADD_COMMENT);
-
         this._api.addDataComment(updateDataFilm, updateDataComment)
           .then((response) => {
             this._commentsModel.setDataComments(response.comments, updateType);
@@ -323,6 +327,9 @@ export default class MovieListPresenter {
 
         break;
       case UserAction.DELETE_COMMENT:
+        if (!isOnline()) {
+          toast('You can\'t delete comment offline');
+        }
         this._api.deleteDataComment(updateDataComment, updateDataFilm.id)
           .then(() => {
             this._moviesModel.updateDataFilms(updateDataFilm, updateType);
