@@ -94,31 +94,31 @@ export default class MoviesModel extends Observer {
       {},
       dataFilm,
       {
-        film_info: {
-          title: dataFilm.filmInfo.title,
-          alternative_title: dataFilm.filmInfo.alternativeTitle,
-          total_rating: dataFilm.filmInfo.totalRating,
-          poster: dataFilm.filmInfo.poster,
-          age_rating: dataFilm.filmInfo.ageRating,
-          director: dataFilm.filmInfo.director,
-          writers: dataFilm.filmInfo.writers,
-          actors: dataFilm.filmInfo.actors,
+        'film_info': {
+          'title': dataFilm.filmInfo.title,
+          'alternative_title': dataFilm.filmInfo.alternativeTitle,
+          'total_rating': dataFilm.filmInfo.totalRating,
+          'poster': dataFilm.filmInfo.poster,
+          'age_rating': dataFilm.filmInfo.ageRating,
+          'director': dataFilm.filmInfo.director,
+          'writers': dataFilm.filmInfo.writers,
+          'actors': dataFilm.filmInfo.actors,
 
-          release: {
-            date: dataFilm.filmInfo.release.date,
-            release_country: dataFilm.filmInfo.release.releaseCountry,
+          'release': {
+            'date': dataFilm.filmInfo.release.date,
+            'release_country': dataFilm.filmInfo.release.releaseCountry,
           },
 
-          runtime: dataFilm.filmInfo.runtime,
-          genre: dataFilm.filmInfo.genre,
-          description: dataFilm.filmInfo.description,
+          'runtime': dataFilm.filmInfo.runtime,
+          'genre': dataFilm.filmInfo.genre,
+          'description': dataFilm.filmInfo.description,
         },
 
-        user_details: {
-          watchlist: dataFilm.userDetails.watchlist,
-          already_watched: dataFilm.userDetails.alreadyWatched,
-          watching_date: dataFilm.userDetails.watchingDate,
-          favorite: dataFilm.userDetails.favorite,
+        'user_details': {
+          'watchlist': dataFilm.userDetails.watchlist,
+          'already_watched': dataFilm.userDetails.alreadyWatched,
+          'watching_date': dataFilm.userDetails.watchingDate,
+          'favorite': dataFilm.userDetails.favorite,
         },
       },
     );

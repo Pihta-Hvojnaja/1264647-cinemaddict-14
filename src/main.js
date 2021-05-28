@@ -17,7 +17,7 @@ import Store from './api/store.js';
 import Provider from './api/provider.js';
 
 
-const AUTHORIZATION = 'Basic userPihta_4';
+const AUTHORIZATION = 'Basic userPihta';
 const END_POINT = 'https://14.ecmascript.pages.academy/cinemaddict';
 
 const STORE_FILMS_PREFIX = 'cinemaddict-localstorage-films';
