@@ -1,10 +1,11 @@
 
-export const ONE_HOUR = 60;
+
+const ONE_HOUR = 60;
 
 /**
  * @type {Object} - перечисление с типами эмоций
  */
-export const EmotionType = {
+const EmotionType = {
   SMILE: 'smile',
   SLEEPING: 'sleeping',
   PUKE: 'puke',
@@ -15,7 +16,7 @@ export const EmotionType = {
 /** Коллекция ФИЛЬТРА
  *  @type {Object} - переменная хранит типы фильтрации
  */
-export const FilterType = {
+const FilterType = {
   ALL: 'all',
   WATCHLIST: 'watchlist',
   HISTORY: 'history',
@@ -27,7 +28,7 @@ export const FilterType = {
 /** Коллекция СОРТИРОВКИ
  *  @type {Object} - переменная хранит типы сортировки данных
  */
-export const SortType = {
+const SortType = {
   DEFAULT: 'default',
   DATE: 'sort-by-date',
   RATING: 'sort-by-rating',
@@ -38,7 +39,7 @@ export const SortType = {
 /** Коллекция ДЕЙСТВИЙ ПОЛЬЗОВАТЕЛЯ
  *  @type {Object} - переменная хранит типы действий пользователя
  */
-export const UserAction = {
+const UserAction = {
   UPDATE_FILM: 'UPDATE_FILM',
   ADD_COMMENT: 'ADD_COMMENT',
   DELETE_COMMENT: 'DELETE_COMMENT',
@@ -48,7 +49,7 @@ export const UserAction = {
 /** Коллекция ОБНОВЛЕНИЙ
  *  @type {Object} - переменная хранит типы обновлений
  */
-export const UpdateType = {
+const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
@@ -60,10 +61,21 @@ export const UpdateType = {
 /** Коллекция ВРЕМЕННЫХ ИНТЕРВАЛОВ
  *  @type {Object} - переменная хранит временные интервалы для фильтра статистики
  */
-export const TypeInterval = {
+const TypeInterval = {
   ALL: 'all-time',
   TODAY: 'day',
   WEEK: 'week',
   MONTH: 'month',
   YEAR: 'year',
+};
+
+
+export {
+  ONE_HOUR,
+  EmotionType,
+  FilterType,
+  SortType,
+  UserAction,
+  UpdateType,
+  TypeInterval
 };

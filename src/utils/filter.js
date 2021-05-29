@@ -11,7 +11,7 @@ dayjs.extend(isBetween);
  * @param {number} count - количество просмотренных фильмов
  * @returns {string} - возвращает разметку рейтинга в профиле
  */
-export const createFilterItemTemplate = (count) => {
+const createFilterItemTemplate = (count) => {
   let status;
 
   if (count >= 1 && count <= 10) {
@@ -47,7 +47,7 @@ const isInInterval = (data, dataFilm, typeInterval) => {
 
 
 /** Объект хранит фильтры для доски с фильмами */
-export const filter = {
+const filter = {
   [FilterType.ALL]: (dataFilms) => dataFilms,
 
   [FilterType.WATCHLIST]: (dataFilms) => dataFilms
@@ -65,7 +65,7 @@ export const filter = {
 
 
 /** Объект хранит фильтры для статистики */
-export const filterTimeInterval = {
+const filterTimeInterval = {
   [TypeInterval.ALL]: (data) => data.dataFilms,
 
   [TypeInterval.TODAY]: (data) => data.dataFilms
@@ -79,4 +79,11 @@ export const filterTimeInterval = {
 
   [TypeInterval.YEAR]: (data) => data.dataFilms
     .filter((dataFilm) => isInInterval(data, dataFilm, TypeInterval.YEAR)),
+};
+
+
+export {
+  createFilterItemTemplate,
+  filter,
+  filterTimeInterval
 };

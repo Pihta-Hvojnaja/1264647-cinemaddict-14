@@ -8,7 +8,7 @@ const ONE_NAME = 1;
  * @param {Array} genres - принимает массив с жанрами
  * @returns {string} - возвращает строку со словом "Genre" или "Genres"
  */
-export const defineNumberGenre = (genres) => genres.length === ONE_GENRE ? 'Genre' : 'Genres';
+const defineNumberGenre = (genres) => genres.length === ONE_GENRE ? 'Genre' : 'Genres';
 
 
 /**
@@ -16,19 +16,17 @@ export const defineNumberGenre = (genres) => genres.length === ONE_GENRE ? 'Genr
  * @param {Array} genres - принимает массив с жанрами
  * @returns {string} - возвращает разметку с жанрами
  */
-export const getGenre = (genres) => {
+const getGenre = (genres) => {
   if (genres.length === ONE_GENRE) {
     return `<span class="film-details__genre">${genres}</span>`;
-
-  } else {
-
-    const glueTags = (accumulator, currentValue) => {
-      accumulator += `<span class="film-details__genre">${currentValue}</span>`;
-      return accumulator;
-    };
-
-    return genres.reduce(glueTags, '');
   }
+
+  const glueTags = (accumulator, currentValue) => {
+    accumulator += `<span class="film-details__genre">${currentValue}</span>`;
+    return accumulator;
+  };
+
+  return genres.reduce(glueTags, '');
 };
 
 
@@ -37,6 +35,13 @@ export const getGenre = (genres) => {
  * @param {Array} names - массив имен
  * @returns {string} - возвращает имена в форме строки
  */
-export const getName = (names) => {
+const getName = (names) => {
   return names.length > ONE_NAME ? names.join(', ') : names + '';
+};
+
+
+export {
+  defineNumberGenre,
+  getGenre,
+  getName
 };

@@ -1,12 +1,13 @@
 
 import dayjs from 'dayjs';
 
+
 /**
  * Ф-ция обновляет поле Watchlist объекта dataFilm / ф-ция копирует объект
  * @param {Object} dataFilm - исходный объект
  * @returns {Object} - обновленная копия dataFilm
  */
-export const updateDataWatchlist = (dataFilm) => {
+const updateDataWatchlist = (dataFilm) => {
   return Object.assign(
     {},
     dataFilm,
@@ -27,7 +28,7 @@ export const updateDataWatchlist = (dataFilm) => {
  * @param {Object} dataFilm - исходный объект
  * @returns {Object} - обновленная копия dataFilm
  */
-export const updateDataWatched = (dataFilm) => {
+const updateDataWatched = (dataFilm) => {
   const isAlreadyWatched = dataFilm.userDetails.watchingDate;
 
   return Object.assign(
@@ -50,7 +51,7 @@ export const updateDataWatched = (dataFilm) => {
  * @param {Object} dataFilm - исходный объект
  * @returns {Object} - обновленная копия dataFilm
  */
-export const updateDataFavorite = (dataFilm) => {
+const updateDataFavorite = (dataFilm) => {
   return Object.assign(
     {},
     dataFilm,
@@ -63,4 +64,11 @@ export const updateDataFavorite = (dataFilm) => {
       },
     },
   );
+};
+
+
+export {
+  updateDataWatchlist,
+  updateDataWatched,
+  updateDataFavorite
 };

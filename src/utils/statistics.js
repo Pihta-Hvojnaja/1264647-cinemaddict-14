@@ -1,5 +1,6 @@
 
-export const getCountRuntimeFilms = (dataFilms) => {
+
+const getCountRuntimeFilms = (dataFilms) => {
   let countRuntimeFilms = 0;
 
   if (dataFilms.length === 0) {
@@ -35,7 +36,7 @@ const getGenresNames = (allGenres) => {
 };
 
 
-export const getGenres = (dataFilms) => {
+const getGenres = (dataFilms) => {
   const genres = [];
 
   if (dataFilms.length === 0) {
@@ -61,4 +62,10 @@ export const getGenres = (dataFilms) => {
   return genres.sort((firstGenre, secondGenre) => {
     return secondGenre.count - firstGenre.count;
   });
+};
+
+
+export {
+  getCountRuntimeFilms,
+  getGenres
 };

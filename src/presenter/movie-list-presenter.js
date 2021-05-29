@@ -324,7 +324,7 @@ export default class MovieListPresenter {
         break;
       case UserAction.ADD_COMMENT:
         if (!isOnline()) {
-          toast('You can\'t delete comment offline');
+          toast('You can\'t add comment offline');
         }
         this._popupPresenter.setViewState(MoviePresenterViewState.ADD_COMMENT);
         this._api.addDataComment(updateDataFilm, updateDataComment)

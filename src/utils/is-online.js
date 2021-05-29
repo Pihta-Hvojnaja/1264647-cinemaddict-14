@@ -1,4 +1,7 @@
 
-export const isOnline = () => {
+const isOnline = () => {
   return window.navigator.onLine;
 };
+
+
+export { isOnline };

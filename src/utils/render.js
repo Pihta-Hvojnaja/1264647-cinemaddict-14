@@ -5,7 +5,7 @@ import Abstract from './../view/abstract.js';
 /**
  * @type {Object} - перечисление содержит позиции для отрисовки элементов
  */
-export const RenderPosition = {
+const RenderPosition = {
   AFTERBEGIN: 'afterbegin',
   BEFOREEND: 'beforeend',
 };
@@ -17,7 +17,7 @@ export const RenderPosition = {
  * @param {Object} child - что отрисовать
  * @param {Object} place - место отрисовки в родителе
  */
-export const render = (container, child, place = RenderPosition.BEFOREEND) => {
+const render = (container, child, place = RenderPosition.BEFOREEND) => {
   if (container instanceof Abstract) {
     container = container.getElement();
   }
@@ -44,7 +44,7 @@ export const render = (container, child, place = RenderPosition.BEFOREEND) => {
  * а не просто <a>Link 1</a><a>Link 2</a>
  * @returns {Object} - возвращает готовый DOM элемент
  */
-export const createElement = (template) => {
+const createElement = (template) => {
   const newElement = document.createElement('div');
   newElement.innerHTML = template;
   return newElement.firstChild;
@@ -56,7 +56,7 @@ export const createElement = (template) => {
  * @param {Object} newChild - новый компонент или элемент разметки
  * @param {Object} oldChild - заменяемый компонент или элемент разметки
  */
-export const replaceComponent = (newChild, oldChild) => {
+const replaceComponent = (newChild, oldChild) => {
   if (oldChild instanceof Abstract) {
     oldChild = oldChild.getElement();
   }
@@ -79,7 +79,7 @@ export const replaceComponent = (newChild, oldChild) => {
  * Ф-ция удаления компонента
  * @param {Object} component - удаляемый компонент
  */
-export const removeComponent = (component) => {
+const removeComponent = (component) => {
   if (component === null) {
     return;
   }
@@ -91,4 +91,13 @@ export const removeComponent = (component) => {
 
   component.getElement().remove();
   component.removeElement();
+};
+
+
+export {
+  RenderPosition,
+  render,
+  createElement,
+  replaceComponent,
+  removeComponent
 };

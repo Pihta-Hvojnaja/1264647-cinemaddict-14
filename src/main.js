@@ -3,7 +3,7 @@ import { UpdateType } from './const.js';
 import { render, replaceComponent } from './utils/render.js';
 import { toast } from './utils/toast.js';
 
-import FooterStatisticsView from './view/footer-statistics.js';
+import FooterStatisticsView from './view/site-footer-statistics.js';
 
 import FilterModel from './model/filter-model.js';
 import MoviesModel from './model/movies-model.js';
